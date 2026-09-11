@@ -71,12 +71,48 @@ const FEATURES = [
   },
 ];
 
-const CHECKS = ["Tanpa aplikasi", "Tanpa akun", "Terkurasi pengurus"];
+const CHECKS = ["Terkurasi pengurus"];
+
+const HERO_IMGS = [
+  "https://res.cloudinary.com/drjrvrdnw/image/upload/v1789151437/download_2_grz04v.jpg",
+  "https://res.cloudinary.com/drjrvrdnw/image/upload/v1789151438/download_wax3p3.jpg",
+  "https://res.cloudinary.com/drjrvrdnw/image/upload/v1789151566/download_2_xo3kpv.jpg",
+  "https://res.cloudinary.com/drjrvrdnw/image/upload/v1789151545/Motivation_message___Typography_design_distortion_blur_effect_tddgpn.jpg",
+  "https://res.cloudinary.com/drjrvrdnw/image/upload/v1789151545/nosialgia_fg7keq.jpg",
+  "https://res.cloudinary.com/drjrvrdnw/image/upload/v1789151442/download_1_mzqwcz.jpg",
+];
 
 const QUOTES = [
   "Momen terbaik sering luput dari kamera panitia — tapi tidak dari puluhan kamera anggota.",
   "Setiap sudut pandang melengkapi yang lain sampai arsip terasa utuh.",
   "Dibuka kembali kapan saja, oleh siapa saja yang memegang tautannya.",
+];
+
+const ZFEATURES = [
+  {
+    n: "01",
+    title: "Pindai QR di lokasi",
+    desc: "Satu kode QR membuka arsip kegiatan langsung di ponsel. Tanpa aplikasi, tanpa akun, tanpa antre.",
+    meta: "/p/:slug · siap cetak",
+    img: "https://res.cloudinary.com/drjrvrdnw/image/upload/v1789098542/background4_vrwiel.png",
+    alt: "Visual langkah pindai QR",
+  },
+  {
+    n: "02",
+    title: "Jepret dari kamera HP",
+    desc: "Pilih dari galeri atau jepret langsung. JPEG otomatis teroptimasi sebelum tersimpan di arsip.",
+    meta: "JPEG · maks sisi 2048px",
+    img: "https://res.cloudinary.com/drjrvrdnw/image/upload/v1789098518/backround2_ijndvk.png",
+    alt: "Visual langkah unggah momen",
+  },
+  {
+    n: "03",
+    title: "Terkurasi sebelum tampil",
+    desc: "Pengurus menyaring setiap foto. Hanya yang disetujui masuk dinding kolektif NFCC.",
+    meta: "hanya APPROVED yang tampil",
+    img: "https://res.cloudinary.com/drjrvrdnw/image/upload/v1789098523/background3_tnggbw.png",
+    alt: "Visual langkah kurasi pengurus",
+  },
 ];
 
 const FAQS = [
@@ -185,8 +221,19 @@ export default function Landing() {
 
       {/* Offset untuk navbar floating fixed (~72px) + ruang napas 20–32px */}
       <main id="top" className="relative scroll-pt-24 pt-[92px] sm:pt-[104px]">
-        {/* Hero Section — kolase foto hidup */}
-        <section className="relative mx-auto max-w-5xl px-5 pt-14 pb-16 sm:pt-20 sm:pb-24">
+        {/* Hero Section — kolase foto hidup, latar full-bleed */}
+        <section className="relative overflow-hidden pt-14 pb-16 sm:pt-20 sm:pb-24">
+          <div aria-hidden className="pointer-events-none absolute inset-0">
+            <img
+              src="https://res.cloudinary.com/drjrvrdnw/image/upload/v1789151967/Gemini_Generated_Image_z6o16cz6o16cz6o1_vclaj8.jpg"
+              alt=""
+              loading="eager"
+              decoding="async"
+              className="h-full w-full object-cover opacity-25"
+            />
+            <div className="absolute inset-0 bg-white/60" />
+          </div>
+          <div className="relative mx-auto max-w-5xl px-5">
           <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-10">
             <div className="text-center lg:text-left">
               <TextAnimate
@@ -236,43 +283,42 @@ export default function Landing() {
               </Reveal>
             </div>
 
-            {live.length > 0 && (
-              <div
-                aria-hidden
-                className="mask-fade-y mx-auto grid max-h-[440px] w-full max-w-md grid-cols-2 gap-3 overflow-hidden sm:max-h-[520px] lg:max-h-[560px] lg:max-w-none"
-              >
-                <div className="animate-marquee-y flex flex-col gap-3">
-                  {[
-                    ...live.filter((_, i) => i % 2 === 0),
-                    ...live.filter((_, i) => i % 2 === 0),
-                  ].map((p, i) => (
-                    <img
-                      key={`kiri-${p.id}-${i}`}
-                      src={p.image_url}
-                      alt=""
-                      loading="lazy"
-                      decoding="async"
-                      className="h-44 w-full rounded-xl border border-[#EAEAEA] bg-[#F7F6F3] object-cover sm:h-56"
-                    />
-                  ))}
-                </div>
-                <div className="animate-marquee-y-slow mt-10 flex flex-col gap-3">
-                  {[
-                    ...live.filter((_, i) => i % 2 === 1),
-                    ...live.filter((_, i) => i % 2 === 1),
-                  ].map((p, i) => (
-                    <img
-                      key={`kanan-${p.id}-${i}`}
-                      src={p.image_url}
-                      alt=""
-                      loading="lazy"
-                      decoding="async"
-                      className="h-44 w-full rounded-xl border border-[#EAEAEA] bg-[#F7F6F3] object-cover sm:h-56"
-                    />
-                  ))}
-                </div>
+            <div
+              aria-hidden
+              className="mask-fade-y mx-auto grid max-h-[440px] w-full max-w-md grid-cols-2 gap-3 overflow-hidden sm:max-h-[520px] lg:max-h-[560px] lg:max-w-none"
+            >
+              <div className="animate-marquee-y flex flex-col gap-3">
+                {[
+                  ...HERO_IMGS.filter((_, i) => i % 2 === 0),
+                  ...HERO_IMGS.filter((_, i) => i % 2 === 0),
+                ].map((src, i) => (
+                  <img
+                    key={`kiri-${i}`}
+                    src={src}
+                    alt=""
+                    loading={i < 2 ? "eager" : "lazy"}
+                    decoding="async"
+                    className="h-44 w-full rounded-xl border border-[#EAEAEA] bg-[#F7F6F3] object-cover sm:h-56"
+                  />
+                ))}
               </div>
-            )}
+              <div className="animate-marquee-y-slow mt-10 flex flex-col gap-3">
+                {[
+                  ...HERO_IMGS.filter((_, i) => i % 2 === 1),
+                  ...HERO_IMGS.filter((_, i) => i % 2 === 1),
+                ].map((src, i) => (
+                  <img
+                    key={`kanan-${i}`}
+                    src={src}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                    className="h-44 w-full rounded-xl border border-[#EAEAEA] bg-[#F7F6F3] object-cover sm:h-56"
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
           </div>
         </section>
 
@@ -407,6 +453,55 @@ export default function Landing() {
                   </p>
                 </div>
               </Reveal>
+            ))}
+          </div>
+        </section>
+
+        {/* Z-Pattern — tiga langkah dengan visual bergantian */}
+        <section
+          aria-label="Cara berkontribusi"
+          className="mx-auto max-w-5xl px-5 py-16 sm:py-24 scroll-mt-24"
+        >
+          <Reveal className="mb-12 text-center">
+            <p className="font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-[#787774]">
+              Cara berkontribusi
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[#111111] sm:text-4xl">
+              Semudah memindai
+            </h2>
+          </Reveal>
+          <div className="flex flex-col gap-12 sm:gap-16">
+            {ZFEATURES.map((z, i) => (
+              <div
+                key={z.n}
+                className="grid items-center gap-6 md:grid-cols-2 md:gap-10"
+              >
+                <Reveal className={i % 2 === 1 ? "md:order-2" : ""}>
+                  <div className="overflow-hidden rounded-xl border border-[#EAEAEA] bg-[#F7F6F3]">
+                    <img
+                      src={z.img}
+                      alt={z.alt}
+                      loading="lazy"
+                      decoding="async"
+                      className="aspect-[16/10] w-full object-cover"
+                    />
+                  </div>
+                </Reveal>
+                <Reveal delay={80} className={i % 2 === 1 ? "md:order-1" : ""}>
+                  <p className="font-mono text-xs tabular-nums text-[#787774]">
+                    {z.n}
+                  </p>
+                  <h3 className="mt-2 text-xl font-semibold tracking-tight text-[#111111] sm:text-2xl">
+                    {z.title}
+                  </h3>
+                  <p className="mt-2 max-w-md text-sm leading-relaxed text-[#787774] sm:text-base">
+                    {z.desc}
+                  </p>
+                  <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.2em] text-[#787774]">
+                    {z.meta}
+                  </p>
+                </Reveal>
+              </div>
             ))}
           </div>
         </section>
