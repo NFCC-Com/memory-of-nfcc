@@ -13,6 +13,8 @@ export interface Photo {
   width: number | null;
   height: number | null;
   like_count: number;
+  /** Status suka visitor ini — diisi endpoint list, absen di respons lain. */
+  liked?: boolean;
 }
 
 export class ApiUnreachableError extends Error {
@@ -24,8 +26,14 @@ export class ApiUnreachableError extends Error {
 
 async function req<T>(path: string, init?: RequestInit): Promise<T> {
   let res: Response;
+  // Tanpa timeout, fetch yang menggantung membuat skeleton tampil selamanya.
+  // Gagal-cepat 20 detik agar berubah menjadi state error yang bisa di-retry.
+  const timeout =
+    typeof AbortSignal !== "undefined" && typeof AbortSignal.timeout === "function"
+      ? AbortSignal.timeout(20000)
+      : undefined;
   try {
-    res = await fetch(path, init);
+    res = await fetch(path, timeout ? { ...init, signal: timeout } : init);
   } catch {
     throw new ApiUnreachableError();
   }
