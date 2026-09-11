@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Eye, EyeOff, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { adminLogin, adminMe, ApiUnreachableError } from "../lib/api.ts";
 import Reveal from "../components/Reveal.tsx";
 import { Button } from "../components/ui/button.tsx";
@@ -10,7 +11,6 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [checking, setChecking] = useState(true);
 
@@ -28,21 +28,20 @@ export default function Login() {
     e.preventDefault();
     if (busy) return;
     setBusy(true);
-    setError("");
     try {
       await adminLogin(email.trim(), password);
       nav("/admin");
     } catch (err) {
       if (err instanceof ApiUnreachableError) {
-        setError(err.message);
+        toast.error(err.message);
       } else if (err instanceof Error) {
-        setError(
+        toast.error(
           err.message === "email atau kata sandi salah"
             ? "Email atau kata sandi salah."
             : err.message,
         );
       } else {
-        setError("Login gagal, periksa koneksi dan coba lagi.");
+        toast.error("Login gagal, periksa koneksi dan coba lagi.");
       }
     } finally {
       setBusy(false);
@@ -134,14 +133,6 @@ export default function Login() {
                 </button>
               </div>
             </div>
-            {error && (
-              <p
-                role="alert"
-                className="rounded-lg bg-[#FDEBEC] px-3.5 py-2.5 text-xs font-medium text-[#9F2F2D]"
-              >
-                {error}
-              </p>
-            )}
             <Button type="submit" disabled={busy} size="lg" className="w-full">
               {busy ? (
                 <span className="inline-flex items-center justify-center gap-2">
