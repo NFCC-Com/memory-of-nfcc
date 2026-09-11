@@ -1,7 +1,8 @@
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ArrowLeft, Camera, Check, Copy, Loader2, X } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { Link, useParams } from "react-router-dom";
+import { toast } from "sonner";
 import { ShareButton } from "../components/LikeButton.tsx";
 import Navbar from "../components/Navbar.tsx";
 import Reveal from "../components/Reveal.tsx";
@@ -32,31 +33,54 @@ export default function EventPage() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState("");
   const [uploading, setUploading] = useState(false);
-  const [notice, setNotice] = useState("");
-  const [noticeKind, setNoticeKind] = useState<"ok" | "err" | "">("");
   const [copied, setCopied] = useState(false);
   const [dragOver, setDragOver] = useState(false);
 
   const eventUrl = typeof window !== "undefined" ? `${window.location.origin}/p/${slug}` : `/p/${slug}`;
 
+  // True setelah mount ini selesai restore (atau memutuskan tidak perlu).
+  // Mencegah cleanup pra-restore (StrictMode/HMR remount) menimpa posisi
+  // tersimpan dengan posisi mentah 0.
+  const restoredRef = useRef(false);
+
   // Posisi scroll per event: native restoration gagal karena remount
-  // me-render skeleton pendek dulu — simpan saat unmount, pulihkan
-  // setelah data siap agar Back mendarat di posisi semula.
-  useEffect(() => {
+  // me-render skeleton pendek dulu — simpan saat masih di halaman event,
+  // pulihkan setelah data siap agar Back mendarat di posisi semula.
+  // Guard pathname wajib: setelah pindah ke photo detail, browser
+  // meng-clamp scroll (halaman pendek) dan cleanup/effect jalan di bawah
+  // path baru — nilai clamp itu tidak boleh menimpa posisi tersimpan.
+  useLayoutEffect(() => {
     const key = `wall-scroll:${slug}`;
+    const eventPath = `/p/${slug}`;
     let prevRestoration: ScrollRestoration = "auto";
+    let raf = 0;
+    function persist() {
+      if (window.location.pathname !== eventPath) return;
+      try {
+        if (!restoredRef.current && sessionStorage.getItem(key) !== null) return;
+        sessionStorage.setItem(key, String(window.scrollY));
+      } catch {
+        // abaikan: mode privat
+      }
+    }
+    function onScroll() {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        persist();
+      });
+    }
     try {
       prevRestoration = history.scrollRestoration;
       history.scrollRestoration = "manual";
     } catch {
       // abaikan: browser lama
     }
+    window.addEventListener("scroll", onScroll, { passive: true });
     return () => {
-      try {
-        sessionStorage.setItem(key, String(window.scrollY));
-      } catch {
-        // abaikan: mode privat
-      }
+      window.removeEventListener("scroll", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+      persist();
       try {
         history.scrollRestoration = prevRestoration;
       } catch {
@@ -74,6 +98,7 @@ export default function EventPage() {
       y = 0;
     }
     if (y > 0) window.scrollTo({ top: y, behavior: "instant" });
+    restoredRef.current = true;
   }, [loading, slug]);
 
   useEffect(() => {
@@ -105,8 +130,6 @@ export default function EventPage() {
 
   function pickFile(f: File | undefined) {
     if (!f) return;
-    setNotice("");
-    setNoticeKind("");
     setFile(f);
   }
 
@@ -114,22 +137,17 @@ export default function EventPage() {
     e.preventDefault();
     if (!file || uploading) return;
     if (file.size > MAX_BYTES) {
-      setNotice("File maksimal 8MB — pilih foto yang lebih kecil.");
-      setNoticeKind("err");
+      toast.error("File maksimal 8MB — pilih foto yang lebih kecil.");
       return;
     }
     setUploading(true);
-    setNotice("");
-    setNoticeKind("");
     try {
       const res = await uploadPhoto(slug, file);
-      setNotice(res.message);
-      setNoticeKind("ok");
+      toast.success(res.message);
       setFile(null);
       setPhotos((await getPhotos(slug)).photos);
     } catch (err) {
-      setNotice(err instanceof Error ? err.message : "Upload gagal");
-      setNoticeKind("err");
+      toast.error(err instanceof Error ? err.message : "Upload gagal");
     } finally {
       setUploading(false);
     }
@@ -303,18 +321,6 @@ export default function EventPage() {
                       <span className="font-mono text-xs text-[#787774]">Format JPEG otomatis dioptimasi.</span>
                     )}
                   </div>
-                  {notice && (
-                    <p
-                      role={noticeKind === "err" ? "alert" : "status"}
-                      className={`rounded-md px-3.5 py-2 text-xs font-medium ${
-                        noticeKind === "err"
-                          ? "bg-[#FDEBEC] text-[#9F2F2D]"
-                          : "bg-[#EDF3EC] text-[#346538]"
-                      }`}
-                    >
-                      {notice}
-                    </p>
-                  )}
                 </div>
               </div>
             </form>
