@@ -40,14 +40,19 @@ export async function listPublicPeriods(): Promise<Period[]> {
   return rows as Period[];
 }
 
-export async function listApprovedPhotos(periodId: string): Promise<Photo[]> {
+export async function listApprovedPhotos(
+  periodId: string,
+  visitorId?: string,
+): Promise<(Photo & { liked: boolean })[]> {
   const rows = await sql`
-    select p.*, (select count(*)::int from photo_likes l where l.photo_id = p.id) as like_count
+    select p.*,
+      (select count(*)::int from photo_likes l where l.photo_id = p.id) as like_count,
+      ${visitorId ? sql`exists(select 1 from photo_likes l where l.photo_id = p.id and l.visitor_id = ${visitorId})` : sql`false`} as liked
     from photos p
     where p.period_id = ${periodId} and p.status = 'APPROVED'
     order by p.created_at desc
   `;
-  return rows as Photo[];
+  return rows as (Photo & { liked: boolean })[];
 }
 
 export async function getApprovedPhoto(id: string): Promise<Photo | null> {

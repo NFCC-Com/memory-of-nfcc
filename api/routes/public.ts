@@ -62,13 +62,14 @@ export const publicRoutes = new Elysia()
     }
     return { period };
   })
-  .get("/api/periods/:slug/photos", async ({ params, set }) => {
+  .get("/api/periods/:slug/photos", async ({ params, set, cookie }) => {
     const period = await getPeriodBySlug(params.slug);
     if (!period) {
       set.status = 404;
       return { error: "event tidak ditemukan" };
     }
-    const photos = await listApprovedPhotos(period.id);
+    const visitorId = ensureVisitorId(cookie as never);
+    const photos = await listApprovedPhotos(period.id, visitorId);
     return { photos };
   })
   .get("/api/photos/:id", async ({ params, set, cookie }) => {
