@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import type { Photo } from "../lib/api.ts";
 import LikeButton, { ShareButton } from "./LikeButton.tsx";
@@ -24,10 +24,38 @@ function useColumnCount() {
 
 function PhotoTile({ photo, slug, index }: { photo: Photo; slug: string; index: number }) {
   const [failed, setFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  const figRef = useRef<HTMLElement>(null);
   const ratio = photo.width && photo.height ? `${photo.width} / ${photo.height}` : undefined;
 
+  // Gagal load transien (timeout/429 saat burst 193 request) tidak boleh
+  // mengunci tile abu-abu selamanya: coba lagi maks 2x saat tile terlihat.
+  // 404 permanen tetap berhenti di fallback setelah budget habis.
+  useEffect(() => {
+    if (!failed || attempt >= 2) return;
+    const el = figRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setFailed(false);
+            setAttempt((n) => n + 1);
+            io.disconnect();
+          }
+        }
+      },
+      { rootMargin: "200px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [failed, attempt]);
+
   return (
-    <figure className="group break-inside-avoid overflow-hidden rounded-xl border border-[#EAEAEA] bg-white transition hover:border-[#cccccc]">
+    <figure
+      ref={figRef}
+      className="group break-inside-avoid overflow-hidden rounded-xl border border-[#EAEAEA] bg-white transition hover:border-[#cccccc] [content-visibility:auto] [contain-intrinsic-size:auto_420px]"
+    >
       <Link to={`/p/${slug}/photo/${photo.id}`} className="block overflow-hidden" aria-label={`Buka foto ${index + 1}`}>
         <div className="overflow-hidden bg-[#F7F6F3]" style={ratio ? { aspectRatio: ratio } : undefined}>
           {failed ? (
@@ -36,6 +64,7 @@ function PhotoTile({ photo, slug, index }: { photo: Photo; slug: string; index: 
             </div>
           ) : (
             <img
+              key={attempt}
               src={photo.image_url}
               alt={`Foto ${index + 1} dari arsip ${slug}`}
               loading={index < 6 ? "eager" : "lazy"}
@@ -47,7 +76,7 @@ function PhotoTile({ photo, slug, index }: { photo: Photo; slug: string; index: 
         </div>
       </Link>
       <figcaption className="flex items-center gap-2 border-t border-[#EAEAEA] bg-white p-2">
-        <LikeButton id={photo.id} initialLiked={false} initialCount={photo.like_count} />
+        <LikeButton key={photo.id} id={photo.id} initialLiked={photo.liked ?? false} initialCount={photo.like_count} />
         <ShareButton url={`${window.location.origin}/p/${slug}/photo/${photo.id}`} />
       </figcaption>
     </figure>
