@@ -1,4 +1,5 @@
 import { BrowserRouter, Link, Route, Routes } from "react-router-dom";
+import { Toaster } from "sonner";
 import Admin from "./pages/Admin.tsx";
 import EventPage from "./pages/EventPage.tsx";
 import Landing from "./pages/Landing.tsx";
@@ -25,6 +26,18 @@ export default function App() {
   return (
     <BrowserRouter>
       <div className="min-h-screen bg-white text-[#2F3437] selection:bg-[#EAEAEA]">
+        <Toaster
+          position="bottom-center"
+          gap={8}
+          toastOptions={{
+            style: {
+              background: "#FFFFFF",
+              border: "1px solid #EAEAEA",
+              color: "#111111",
+              fontSize: "13px",
+            },
+          }}
+        />
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/p/:slug" element={<EventPage />} />
