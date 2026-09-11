@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, CalendarDays, Check, Copy, Download, Images, Loader2, LogOut, Plus, X } from "lucide-react";
+import { toast } from "sonner";
 import {
   adminCreateEvent,
   adminDeleteEvent,
@@ -156,7 +157,6 @@ export default function Admin() {
   const [events, setEvents] = useState<AdminEvent[]>([]);
   const [photos, setPhotos] = useState<AdminPhoto[]>([]);
   const [photoFilter, setPhotoFilter] = useState("PENDING");
-  const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<{ kind: "event" | "photo"; id: string; name: string } | null>(null);
@@ -203,8 +203,8 @@ export default function Admin() {
 
   useEffect(() => {
     if (!ready) return;
-    loadEvents().catch((e: Error) => setNotice(e.message));
-    loadPhotos().catch((e: Error) => setNotice(e.message));
+    loadEvents().catch((e: Error) => toast.error(e.message));
+    loadPhotos().catch((e: Error) => toast.error(e.message));
   }, [ready, loadEvents, loadPhotos]);
 
   if (!ready)
@@ -220,9 +220,9 @@ export default function Admin() {
     setBusy(true);
     try {
       await fn();
-      setNotice(okMsg);
+      toast.success(okMsg);
     } catch (err) {
-      setNotice(err instanceof Error ? err.message : errMsg);
+      toast.error(err instanceof Error ? err.message : errMsg);
     } finally {
       setBusy(false);
     }
@@ -361,12 +361,6 @@ export default function Admin() {
               </div>
             )}
           </Reveal>
-
-          {notice && (
-            <p role="status" className="mt-4 rounded-md border border-[#EDF3EC] bg-[#EDF3EC] px-3.5 py-2 font-mono text-xs text-[#346538]">
-              {notice}
-            </p>
-          )}
 
           {tab === "photos" && (
             <section role="tabpanel" id="panel-photos" aria-labelledby="tab-photos" className="mt-6">
