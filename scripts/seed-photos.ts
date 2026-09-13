@@ -1,4 +1,4 @@
-import { sql } from "./client.ts";
+import { sql } from "../api/db/client.js";
 
 console.log("Starting 200 photo seed...");
 

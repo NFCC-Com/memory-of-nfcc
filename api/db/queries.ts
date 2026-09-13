@@ -1,4 +1,4 @@
-import { sql } from "./client.ts";
+import { sql } from "./client.js";
 
 export interface Period {
   id: string;

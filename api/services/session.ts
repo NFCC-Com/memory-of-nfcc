@@ -1,6 +1,6 @@
 import { hash, verify } from "@node-rs/argon2";
 import { createHash, randomBytes } from "node:crypto";
-import { sql } from "../db/client.ts";
+import { sql } from "../db/client.js";
 
 export const SESSION_COOKIE = "admin_session";
 const SESSION_DAYS = 7;

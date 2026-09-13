@@ -1,4 +1,4 @@
-import { sql } from "./client.ts";
+import { sql } from "../api/db/client.js";
 
 const tables = await sql.query(
   "select table_name from information_schema.tables where table_schema = 'public' order by 1",

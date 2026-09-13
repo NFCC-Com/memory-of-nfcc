@@ -1,5 +1,5 @@
-import { sql } from "./client.ts";
-import { hashPassword } from "../services/session.ts";
+import { sql } from "../api/db/client.js";
+import { hashPassword } from "../api/services/session.js";
 
 const email = process.env.ADMIN_EMAIL?.trim().toLowerCase();
 const password = process.env.ADMIN_PASSWORD;

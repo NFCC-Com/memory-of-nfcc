@@ -11,10 +11,10 @@ import {
   hasLiked,
   listApprovedPhotos,
   listPublicPeriods,
-} from "../db/queries.ts";
-import { isAllowed } from "../middleware/rate-limit.ts";
-import { reviewImage } from "../services/moderation.ts";
-import { getPhotoBytes, photoKey, publicUrlFor, putPhoto } from "../services/storage.ts";
+} from "../db/queries.js";
+import { isAllowed } from "../middleware/rate-limit.js";
+import { reviewImage } from "../services/moderation.js";
+import { getPhotoBytes, photoKey, publicUrlFor, putPhoto } from "../services/storage.js";
 
 const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
 const MAX_DIMENSION = 6000;
@@ -91,7 +91,12 @@ export const publicRoutes = new Elysia()
       const { bytes, contentType } = await getPhotoBytes(photo.storage_key);
       // Bytes foto tidak pernah berubah untuk satu id — aman di-cache
       // browser/CDN selamanya. Path error (404) tidak memakai header ini.
-      return new Response(bytes, {
+      // Salin ke ArrayBuffer baru: checker per-file Vercel menolak Uint8Array generik sbg BodyInit.
+      const buffer = bytes.buffer.slice(
+        bytes.byteOffset,
+        bytes.byteOffset + bytes.byteLength,
+      ) as ArrayBuffer;
+      return new Response(buffer, {
         headers: {
           "content-type": contentType ?? photo.mime_type ?? "image/jpeg",
           "cache-control": "public, max-age=31536000, immutable",

@@ -9,8 +9,8 @@ import {
   listPhotosAdmin,
   setPhotoStatus,
   updateEvent,
-} from "../db/queries.ts";
-import { isAllowed } from "../middleware/rate-limit.ts";
+} from "../db/queries.js";
+import { isAllowed } from "../middleware/rate-limit.js";
 import {
   clearSessionCookie,
   createSession,
@@ -19,8 +19,8 @@ import {
   sessionCookie,
   SESSION_COOKIE,
   verifyPassword,
-} from "../services/session.ts";
-import { deletePhoto } from "../services/storage.ts";
+} from "../services/session.js";
+import { deletePhoto } from "../services/storage.js";
 
 async function requireAdmin(cookie: Record<string, { value?: string }>, set: { status?: number | string }) {
   const user = await getSessionUser(cookie[SESSION_COOKIE]?.value as string | undefined);
@@ -40,8 +40,9 @@ export const adminRoutes = new Elysia()
         set.status = 429;
         return { error: "terlalu banyak percobaan, coba lagi nanti" };
       }
-      const admin = await getAdminByEmail(body.email.trim().toLowerCase());
-      if (!admin || !(await verifyPassword(admin.password_hash, body.password))) {
+      const login = body as { email: string; password: string };
+      const admin = await getAdminByEmail(login.email.trim().toLowerCase());
+      if (!admin || !(await verifyPassword(admin.password_hash, login.password))) {
         set.status = 401;
         return { error: "email atau kata sandi salah" };
       }
@@ -69,16 +70,17 @@ export const adminRoutes = new Elysia()
     "/api/admin/events",
     async ({ body, cookie, set }) => {
       if (!(await requireAdmin(cookie as never, set))) return { error: "belum login" };
-      const status = body.status ?? "UPCOMING";
+      const input = body as { name: string; slug: string; description?: string; status?: string };
+      const status = input.status ?? "UPCOMING";
       if (!isEventStatus(status)) {
         set.status = 400;
         return { error: "status tidak valid" };
       }
       try {
         const event = await createEvent({
-          name: body.name.trim(),
-          slug: body.slug.trim().toLowerCase(),
-          description: body.description?.trim() ?? "",
+          name: input.name.trim(),
+          slug: input.slug.trim().toLowerCase(),
+          description: input.description?.trim() ?? "",
           status,
         });
         set.status = 201;
@@ -101,14 +103,15 @@ export const adminRoutes = new Elysia()
     "/api/admin/events/:id",
     async ({ params, body, cookie, set }) => {
       if (!(await requireAdmin(cookie as never, set))) return { error: "belum login" };
-      if (body.status !== undefined && !isEventStatus(body.status)) {
+      const patch = body as { name?: string; description?: string; status?: string };
+      if (patch.status !== undefined && !isEventStatus(patch.status)) {
         set.status = 400;
         return { error: "status tidak valid" };
       }
       const event = await updateEvent(params.id, {
-        name: body.name?.trim() || undefined,
-        description: body.description?.trim(),
-        status: body.status as never,
+        name: patch.name?.trim() || undefined,
+        description: patch.description?.trim(),
+        status: patch.status as never,
       });
       if (!event) {
         set.status = 404;
@@ -137,11 +140,12 @@ export const adminRoutes = new Elysia()
     "/api/admin/photos/:id",
     async ({ params, body, cookie, set }) => {
       if (!(await requireAdmin(cookie as never, set))) return { error: "belum login" };
-      if (body.status !== "APPROVED" && body.status !== "REJECTED") {
+      const patch = body as { status: string };
+      if (patch.status !== "APPROVED" && patch.status !== "REJECTED") {
         set.status = 400;
         return { error: "status harus APPROVED atau REJECTED" };
       }
-      const photo = await setPhotoStatus(params.id, body.status);
+      const photo = await setPhotoStatus(params.id, patch.status);
       if (!photo) {
         set.status = 404;
         return { error: "foto tidak ditemukan" };
