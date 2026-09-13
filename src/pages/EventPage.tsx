@@ -7,6 +7,7 @@ import { ShareButton } from "../components/LikeButton.tsx";
 import Navbar from "../components/Navbar.tsx";
 import Reveal from "../components/Reveal.tsx";
 import { Button } from "../components/ui/button.tsx";
+import { useLanguage } from "../lib/i18n.tsx";
 import { getPeriod, getPhotos, uploadPhoto, type Period, type Photo } from "../lib/api.ts";
 
 const PhotoWall = lazy(() => import("../components/PhotoWall.tsx"));
@@ -25,6 +26,7 @@ function SkeletonWall() {
 
 export default function EventPage() {
   const { slug = "" } = useParams();
+  const { t } = useLanguage();
   const [period, setPeriod] = useState<Period | null>(null);
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
@@ -137,7 +139,7 @@ export default function EventPage() {
     e.preventDefault();
     if (!file || uploading) return;
     if (file.size > MAX_BYTES) {
-      toast.error("File maksimal 8MB — pilih foto yang lebih kecil.");
+      toast.error(t.event.fileTooBig);
       return;
     }
     setUploading(true);
@@ -147,7 +149,7 @@ export default function EventPage() {
       setFile(null);
       setPhotos((await getPhotos(slug)).photos);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Upload gagal");
+      toast.error(err instanceof Error ? err.message : t.event.uploadFailed);
     } finally {
       setUploading(false);
     }
@@ -168,7 +170,7 @@ export default function EventPage() {
           <div className="mt-8">
             <SkeletonWall />
           </div>
-          <p className="mt-6 text-center font-mono text-xs text-[#787774]" role="status">Memuat event…</p>
+          <p className="mt-6 text-center font-mono text-xs text-[#787774]" role="status">{t.event.loading}</p>
         </div>
       </div>
     );
@@ -185,11 +187,11 @@ export default function EventPage() {
               <path d="M3 16.5 8 12l4 3 3-2 6 3.5" />
             </svg>
           </div>
-          <h1 className="mt-4 text-xl font-semibold tracking-tight text-[#111111]">Event tidak ditemukan</h1>
-          <p className="mt-2 text-sm text-[#787774]">{error || "Periksa kembali QR atau tautan yang digunakan."}</p>
+          <h1 className="mt-4 text-xl font-semibold tracking-tight text-[#111111]">{t.event.notFoundTitle}</h1>
+          <p className="mt-2 text-sm text-[#787774]">{error || t.event.notFoundDefault}</p>
           <Button asChild size="default" className="mt-6">
             <Link to="/">
-              <ArrowLeft aria-hidden className="size-3.5" /> Beranda
+              <ArrowLeft aria-hidden className="size-3.5" /> {t.event.home}
             </Link>
           </Button>
         </div>
@@ -209,7 +211,7 @@ export default function EventPage() {
               className="inline-flex items-center gap-1.5 rounded-md text-sm font-medium text-[#787774] transition hover:text-[#111111]"
             >
               <ArrowLeft aria-hidden className="size-3.5" />
-              Beranda
+              {t.event.home}
             </Link>
           </Reveal>
           <Reveal className="flex flex-wrap items-center gap-3">
@@ -222,7 +224,7 @@ export default function EventPage() {
               }`}
             >
               <span className={`h-1.5 w-1.5 rounded-full ${period.status === "ACTIVE" ? "bg-[#346538]" : "bg-[#787774]"}`} />
-              {period.status === "ACTIVE" ? "Menerima foto" : period.status}
+              {period.status === "ACTIVE" ? t.common.receiving : period.status}
             </span>
           </Reveal>
           {period.description && (
@@ -255,8 +257,8 @@ export default function EventPage() {
             >
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <h2 className="font-semibold text-[#111111]">Tambah fotomu</h2>
-                  <p className="mt-1 text-sm text-[#787774]">Hanya format JPEG/JPG, maks 8MB. Foto langsung tampil di galeri.</p>
+                  <h2 className="font-semibold text-[#111111]">{t.event.addPhoto}</h2>
+                  <p className="mt-1 text-sm text-[#787774]">{t.event.addPhotoSub}</p>
                 </div>
                 <span className="hidden shrink-0 rounded-md border border-[#EAEAEA] bg-[#F7F6F3] px-2.5 py-1 font-mono text-xs text-[#787774] sm:inline-block">
                   JPG · 8MB
@@ -266,12 +268,12 @@ export default function EventPage() {
                 {preview ? (
                   <div className="relative shrink-0">
                     <div className="rounded-lg overflow-hidden border border-[#EAEAEA]">
-                      <img src={preview} alt="Pratinjau foto yang akan diunggah" className="max-h-44 w-auto object-contain" />
+                      <img src={preview} alt={t.event.previewAlt} className="max-h-44 w-auto object-contain" />
                     </div>
                     <button
                       type="button"
                       onClick={() => setFile(null)}
-                      aria-label="Hapus pratinjau"
+                      aria-label={t.event.removePreview}
                       className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full border border-[#EAEAEA] bg-white text-[#787774] transition hover:bg-[#F7F6F3] hover:text-[#111111]"
                     >
                       <X aria-hidden className="size-3" />
@@ -297,10 +299,10 @@ export default function EventPage() {
                       className="sr-only"
                     />
                     <span className="inline-flex items-center gap-1.5 rounded-md bg-[#111111] px-3 py-1 text-xs font-medium text-white">
-                      <Camera className="size-3.5" aria-hidden /> Pilih foto
+                      <Camera className="size-3.5" aria-hidden /> {t.event.choosePhoto}
                     </span>
                     <span className="truncate text-xs font-mono text-[#787774]">
-                      {file ? `${file.name} (${(file.size / 1024 / 1024).toFixed(1)}MB)` : "atau seret foto ke area ini"}
+                      {file ? t.event.chosenFile(file.name, (file.size / 1024 / 1024).toFixed(1)) : t.event.dropHint}
                     </span>
                   </label>
                   <div className="flex flex-wrap items-center gap-3">
@@ -311,14 +313,14 @@ export default function EventPage() {
                       {uploading ? (
                         <span className="inline-flex items-center gap-2">
                           <Loader2 aria-hidden className="h-3.5 w-3.5 animate-spin" />
-                          Mengunggah…
+                          {t.event.uploading}
                         </span>
                       ) : (
-                        "Upload foto"
+                        t.event.upload
                       )}
                     </Button>
                     {file && !uploading && (
-                      <span className="font-mono text-xs text-[#787774]">Format JPEG otomatis dioptimasi.</span>
+                      <span className="font-mono text-xs text-[#787774]">{t.event.optimizedNote}</span>
                     )}
                   </div>
                 </div>
@@ -328,7 +330,7 @@ export default function EventPage() {
         ) : (
           <Reveal className="mb-8">
             <p className="rounded-xl border border-[#EAEAEA] bg-[#F7F6F3] p-4 text-sm text-[#787774]">
-              Event ini sedang tidak menerima unggahan foto baru.
+              {t.event.closedNote}
             </p>
           </Reveal>
         )}
@@ -336,13 +338,13 @@ export default function EventPage() {
         {/* Photo Wall */}
         <Reveal>
           <div className="mt-8 mb-4 flex items-baseline justify-between border-b border-[#EAEAEA] pb-2">
-            <h2 className="text-base font-semibold text-[#111111]">Dinding Foto</h2>
-            <span className="font-mono text-xs text-[#787774] tabular-nums">{photos.length} foto</span>
+            <h2 className="text-base font-semibold text-[#111111]">{t.event.wallTitle}</h2>
+            <span className="font-mono text-xs text-[#787774] tabular-nums">{photos.length} {t.event.photosUnit}</span>
           </div>
           {photos.length === 0 ? (
             <div className="rounded-xl border border-[#EAEAEA] bg-[#F7F6F3] px-5 py-12 text-center">
-              <p className="text-lg font-semibold text-[#111111]">Belum ada foto.</p>
-              <p className="mt-1 font-mono text-xs text-[#787774]">Jadilah yang pertama mengunggah momen acara ini.</p>
+              <p className="text-lg font-semibold text-[#111111]">{t.event.emptyTitle}</p>
+              <p className="mt-1 font-mono text-xs text-[#787774]">{t.event.emptySub}</p>
             </div>
           ) : (
             <Suspense fallback={<SkeletonWall />}>
@@ -358,7 +360,7 @@ export default function EventPage() {
               <QRCodeSVG value={eventUrl} size={100} aria-label={`QR menuju ${eventUrl}`} />
             </div>
             <div className="mt-4 flex-1 sm:mt-0">
-              <h2 className="font-semibold text-[#111111]">Ajak Tamu Lain</h2>
+              <h2 className="font-semibold text-[#111111]">{t.event.inviteTitle}</h2>
               <p className="mt-0.5 font-mono text-xs break-all text-[#787774]">{eventUrl}</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 <Button
@@ -375,11 +377,11 @@ export default function EventPage() {
                 >
                   {copied ? (
                     <>
-                      <Check aria-hidden className="text-[#346538]" /> Tautan disalin
+                      <Check aria-hidden className="text-[#346538]" /> {t.event.copied}
                     </>
                   ) : (
                     <>
-                      <Copy aria-hidden /> Salin tautan
+                      <Copy aria-hidden /> {t.event.copyLink}
                     </>
                   )}
                 </Button>

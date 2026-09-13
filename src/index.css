@@ -161,6 +161,15 @@ body {
     );
 }
 
+/* Hide scrollbar but keep scrolling — menu panel, editorial */
+.no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
 /* Card hover — ultra-subtle lift */
 .card-hover {
     transition: box-shadow 0.2s ease, transform 0.2s ease;

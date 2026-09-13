@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Check, Heart, Link2, Share2 } from "lucide-react";
 import { likePhoto, sharePhoto, unlikePhoto } from "../lib/api.ts";
+import { useLanguage } from "../lib/i18n.tsx";
 import { Button } from "./ui/button.tsx";
 
 interface Props {
@@ -15,6 +16,7 @@ export default function LikeButton({ id, initialLiked, initialCount }: Props) {
   const [busy, setBusy] = useState(false);
   const [pop, setPop] = useState(false);
   const [failed, setFailed] = useState(false);
+  const { t } = useLanguage();
 
   async function toggle() {
     if (busy) return;
@@ -45,10 +47,10 @@ export default function LikeButton({ id, initialLiked, initialCount }: Props) {
       aria-pressed={liked}
       aria-label={
         failed
-          ? `Gagal menyimpan suka, tekan untuk coba lagi (${count})`
+          ? t.like.failedAria(count)
           : liked
-            ? `Batal suka (${count})`
-            : `Suka foto (${count})`
+            ? t.like.unlikeAria(count)
+            : t.like.likeAria(count)
       }
       className={pop ? "scale-110" : "scale-100"}
     >
@@ -60,6 +62,7 @@ export default function LikeButton({ id, initialLiked, initialCount }: Props) {
 
 export function ShareButton({ url }: { url: string }) {
   const [state, setState] = useState<"idle" | "shared" | "copied" | "failed">("idle");
+  const { t } = useLanguage();
 
   async function onShare() {
     try {
@@ -75,17 +78,17 @@ export function ShareButton({ url }: { url: string }) {
     <Button type="button" size="sm" variant="outline" onClick={onShare} aria-live="polite">
       {state === "copied" ? (
         <>
-          <Link2 aria-hidden /> Disalin
+          <Link2 aria-hidden /> {t.like.copied}
         </>
       ) : state === "shared" ? (
         <>
-          <Check aria-hidden /> Terkirim
+          <Check aria-hidden /> {t.like.sent}
         </>
       ) : state === "failed" ? (
-        "Gagal"
+        t.like.failed
       ) : (
         <>
-          <Share2 aria-hidden /> Bagikan
+          <Share2 aria-hidden /> {t.like.share}
         </>
       )}
     </Button>

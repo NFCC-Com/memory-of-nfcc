@@ -5,10 +5,12 @@ import LikeButton, { ShareButton } from "../components/LikeButton.tsx";
 import Navbar from "../components/Navbar.tsx";
 import Reveal from "../components/Reveal.tsx";
 import { Button } from "../components/ui/button.tsx";
+import { useLanguage } from "../lib/i18n.tsx";
 import { getPhoto, type Photo } from "../lib/api.ts";
 
 export default function PhotoPage() {
   const { slug = "", id = "" } = useParams();
+  const { t } = useLanguage();
   const [photo, setPhoto] = useState<Photo | null>(null);
   const [liked, setLiked] = useState(false);
   const [error, setError] = useState("");
@@ -36,7 +38,7 @@ export default function PhotoPage() {
         <Navbar />
         <div className="mx-auto max-w-4xl px-5 py-16 flex flex-col items-center gap-4">
           <div className="skeleton aspect-[4/3] w-full max-w-2xl rounded-xl border border-[#EAEAEA]" aria-hidden />
-          <p className="font-mono text-xs text-[#787774]" role="status">Memuat foto…</p>
+          <p className="font-mono text-xs text-[#787774]" role="status">{t.photo.loading}</p>
         </div>
       </div>
     );
@@ -53,11 +55,11 @@ export default function PhotoPage() {
               <path d="M3 16.5 8 12l4 3 3-2 6 3.5" />
             </svg>
           </div>
-          <h1 className="mt-4 text-xl font-semibold tracking-tight text-[#111111]">Foto tidak ditemukan</h1>
-          <p className="mt-2 text-sm text-[#787774]">{error || "Foto ini mungkin sudah dihapus atau tidak tersedia."}</p>
+          <h1 className="mt-4 text-xl font-semibold tracking-tight text-[#111111]">{t.photo.notFoundTitle}</h1>
+          <p className="mt-2 text-sm text-[#787774]">{error || t.photo.notFoundDefault}</p>
           <Button asChild size="default" className="mt-6">
             <Link to={`/p/${slug}`}>
-              <ArrowLeft aria-hidden className="size-3.5" /> Kembali ke dinding
+              <ArrowLeft aria-hidden className="size-3.5" /> {t.photo.backWall}
             </Link>
           </Button>
         </div>
@@ -75,10 +77,10 @@ export default function PhotoPage() {
             className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-sm font-medium text-[#787774] transition hover:bg-[#F7F6F3] hover:text-[#2F3437]"
           >
             <ArrowLeft aria-hidden className="size-3.5" />
-            <span>Kembali ke dinding</span>
+            <span>{t.photo.backWall}</span>
           </Link>
           <div className="rounded-md border border-[#EAEAEA] bg-[#F7F6F3] px-2.5 py-1 font-mono text-xs text-[#787774] tabular-nums">
-            {photo.width && photo.height ? `${photo.width}×${photo.height} · ` : ""}{photo.like_count} suka
+            {photo.width && photo.height ? `${photo.width}×${photo.height} · ` : ""}{photo.like_count} {t.photo.likesUnit}
           </div>
         </div>
       </header>
@@ -119,10 +121,10 @@ export default function PhotoPage() {
                   variant="outline"
                   size="sm"
                   asChild
-                  aria-label="Unduh foto"
+                  aria-label={t.photo.downloadLabel}
                 >
                   <a href={photo.image_url} download target="_blank" rel="noopener noreferrer">
-                    <Download className="size-3.5 mr-1" aria-hidden /> Unduh
+                    <Download className="size-3.5 mr-1" aria-hidden /> {t.photo.download}
                   </a>
                 </Button>
                 <Button
@@ -134,10 +136,10 @@ export default function PhotoPage() {
                       setTimeout(() => setCopied(false), 2000);
                     });
                   }}
-                  aria-label="Salin tautan foto"
+                  aria-label={t.photo.copyLinkLabel}
                 >
                   <Share2 className="size-3.5 mr-1" aria-hidden />
-                  {copied ? "Tersalin" : "Tautan"}
+                  {copied ? t.photo.copied : t.photo.linkLabel}
                 </Button>
               </div>
             </div>
@@ -147,7 +149,7 @@ export default function PhotoPage() {
 
       <footer className="border-t border-[#EAEAEA] bg-white mt-16">
         <div className="mx-auto max-w-4xl px-5 py-6 font-mono text-xs text-[#787774]">
-          MEMORY of NFCC — Arsip Visual
+          {t.photo.footer}
         </div>
       </footer>
     </div>

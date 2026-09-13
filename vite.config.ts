@@ -11,7 +11,8 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/api': 'http://localhost:3001',
+      // Ikuti PORT yang dipakai api/index.ts agar tidak ECONNREFUSED saat PORT dioverride.
+      '/api': `http://localhost:${process.env.PORT ?? 3001}`,
     },
   },
 })

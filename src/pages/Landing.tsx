@@ -1,19 +1,14 @@
 import { lazy, Suspense, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  Archive,
-  Camera,
   Plus,
-  QrCode,
   Quote,
-  Shield,
-  Users,
-  Zap,
 } from "lucide-react";
 import Navbar from "../components/Navbar.tsx";
 import Reveal from "../components/Reveal.tsx";
 import TextAnimate from "../components/TextAnimate.tsx";
 import { Button } from "../components/ui/button.tsx";
+import { useLanguage } from "../lib/i18n.tsx";
 
 const StepsStack = lazy(() => import("../components/StepsStack.tsx"));
 const Manifesto = lazy(() => import("../components/Manifesto.tsx"));
@@ -33,45 +28,11 @@ function StepsStackFallback() {
   );
 }
 import { getPeriods, getPhotos, type Period, type Photo } from "../lib/api.ts";
+import type { Strings } from "../lib/i18n.tsx";
 
 const DEMO_SLUG = "demo-2026";
 const CTA_BG =
   "https://res.cloudinary.com/drjrvrdnw/image/upload/v1789100226/backround2_1_ls0ssp.png";
-
-const FEATURES = [
-  {
-    title: "Satu QR per Kegiatan",
-    desc: "Setiap kegiatan punya tautan /p/:slug dan kode QR siap cetak untuk lokasi acara.",
-    Icon: QrCode,
-  },
-  {
-    title: "Kontribusi Anggota",
-    desc: "Siapa pun di NFCC bisa melihat, mengunggah, menyukai, dan membagikan. Tanpa akun.",
-    Icon: Users,
-  },
-  {
-    title: "Kurasi Pengurus",
-    desc: "Hanya foto berstatus APPROVED yang tampil di dinding publik.",
-    Icon: Shield,
-  },
-  {
-    title: "Dinding Kolektif",
-    desc: "Foto terverifikasi langsung tampil di galeri bersama.",
-    Icon: Zap,
-  },
-  {
-    title: "Kamera HP",
-    desc: "Jepret dari kamera bawaan. JPEG otomatis teroptimasi sebelum tersimpan.",
-    Icon: Camera,
-  },
-  {
-    title: "Arsip Organisasi",
-    desc: "Dokumentasi kegiatan tersimpan aman dan bisa dibuka kembali kapan saja.",
-    Icon: Archive,
-  },
-];
-
-const CHECKS = ["Terkurasi pengurus"];
 
 const HERO_IMGS = [
   "https://res.cloudinary.com/drjrvrdnw/image/upload/v1789151437/download_2_grz04v.jpg",
@@ -82,68 +43,18 @@ const HERO_IMGS = [
   "https://res.cloudinary.com/drjrvrdnw/image/upload/v1789151442/download_1_mzqwcz.jpg",
 ];
 
-const QUOTES = [
-  "Momen terbaik sering luput dari kamera panitia — tapi tidak dari puluhan kamera anggota.",
-  "Setiap sudut pandang melengkapi yang lain sampai arsip terasa utuh.",
-  "Dibuka kembali kapan saja, oleh siapa saja yang memegang tautannya.",
+const ZIMGS = [
+  "https://res.cloudinary.com/drjrvrdnw/image/upload/v1789098542/background4_vrwiel.png",
+  "https://res.cloudinary.com/drjrvrdnw/image/upload/v1789098518/backround2_ijndvk.png",
+  "https://res.cloudinary.com/drjrvrdnw/image/upload/v1789098523/background3_tnggbw.png",
 ];
 
-const ZFEATURES = [
-  {
-    n: "01",
-    title: "Pindai QR di lokasi",
-    desc: "Satu kode QR membuka arsip kegiatan langsung di ponsel. Tanpa aplikasi, tanpa akun, tanpa antre.",
-    meta: "/p/:slug · siap cetak",
-    img: "https://res.cloudinary.com/drjrvrdnw/image/upload/v1789098542/background4_vrwiel.png",
-    alt: "Visual langkah pindai QR",
-  },
-  {
-    n: "02",
-    title: "Jepret dari kamera HP",
-    desc: "Pilih dari galeri atau jepret langsung. JPEG otomatis teroptimasi sebelum tersimpan di arsip.",
-    meta: "JPEG · maks sisi 2048px",
-    img: "https://res.cloudinary.com/drjrvrdnw/image/upload/v1789098518/backround2_ijndvk.png",
-    alt: "Visual langkah unggah momen",
-  },
-  {
-    n: "03",
-    title: "Terkurasi sebelum tampil",
-    desc: "Pengurus menyaring setiap foto. Hanya yang disetujui masuk dinding kolektif NFCC.",
-    meta: "hanya APPROVED yang tampil",
-    img: "https://res.cloudinary.com/drjrvrdnw/image/upload/v1789098523/background3_tnggbw.png",
-    alt: "Visual langkah kurasi pengurus",
-  },
-];
-
-const FAQS = [
-  {
-    q: "Bagaimana cara mengunggah foto?",
-    a: "Pindai kode QR di lokasi kegiatan untuk membuka arsip, lalu pilih foto dari galeri atau jepret langsung dari kamera HP.",
-  },
-  {
-    q: "Apakah perlu membuat akun?",
-    a: "Tidak. Siapa pun yang memiliki tautan kegiatan bisa melihat, mengunggah, menyukai, dan membagikan foto.",
-  },
-  {
-    q: "Format foto apa saja yang diterima?",
-    a: "JPEG/JPG hingga 8MB. Setiap foto otomatis dioptimasi (maksimal sisi 2048px, kualitas 82) sebelum tersimpan.",
-  },
-  {
-    q: "Kenapa fotoku belum tampil di dinding?",
-    a: "Foto menunggu kurasi pengurus. Hanya foto berstatus APPROVED yang tampil di dinding publik.",
-  },
-  {
-    q: "Siapa yang bisa melihat arsip?",
-    a: "Arsip bersifat publik — siapa pun yang memiliki tautan /p/:slug dapat membukanya kapan saja.",
-  },
-];
-
-function statusBadge(status: Period["status"]) {
+function statusBadge(status: Period["status"], c: Strings["common"]) {
   if (status === "ACTIVE")
-    return { cls: "bg-[#EDF3EC] text-[#346538]", label: "Aktif" };
+    return { cls: "bg-[#EDF3EC] text-[#346538]", label: c.active };
   if (status === "UPCOMING")
-    return { cls: "bg-[#FBF3DB] text-[#956400]", label: "Segera" };
-  return { cls: "bg-[#F7F6F3] text-[#787774]", label: "Selesai" };
+    return { cls: "bg-[#FBF3DB] text-[#956400]", label: c.upcoming };
+  return { cls: "bg-[#F7F6F3] text-[#787774]", label: c.done };
 }
 
 function CheckIcon() {
@@ -185,6 +96,7 @@ function ArrowIcon() {
 
 export default function Landing() {
   const nav = useNavigate();
+  const { t } = useLanguage();
   const [slug, setSlug] = useState("");
   const [live, setLive] = useState<Photo[]>([]);
   const [periods, setPeriods] = useState<Period[]>([]);
@@ -241,14 +153,12 @@ export default function Landing() {
                 delay={100}
                 className="mt-8 block text-4xl font-extrabold uppercase leading-[0.95] tracking-tighter text-balance text-[#111111] sm:text-6xl lg:text-7xl"
               >
-                Semua lensa. Satu memori.
+                {t.hero.title}
               </TextAnimate>
 
               <Reveal delay={160}>
                 <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-balance text-[#787774] sm:text-lg lg:mx-0">
-                  Satu kegiatan, satu tautan, satu QR. Anggota memindai dari
-                  ponsel, mengunggah momen, dan foto menjadi arsip kolektif
-                  NFCC.
+                  {t.hero.sub}
                 </p>
               </Reveal>
 
@@ -260,13 +170,13 @@ export default function Landing() {
                     size="lg"
                     className="min-w-[180px] transition-all duration-200 hover:-translate-y-0.5"
                   >
-                    <a href="#galeri">Explore Memories</a>
+                    <a href="#galeri">{t.hero.ctaPrimary}</a>
                   </Button>
                   <Link
                     to={`/p/${DEMO_SLUG}`}
                     className="skiper-link py-1 text-sm font-medium text-[#111111]"
                   >
-                    Lihat Arsip Demo <span aria-hidden>→</span>
+                    {t.hero.ctaSecondary} <span aria-hidden>→</span>
                   </Link>
                 </div>
               </Reveal>
@@ -274,7 +184,7 @@ export default function Landing() {
               {/* Trust Badges */}
               <Reveal delay={320} className="mt-10">
                 <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs font-mono text-[#787774] lg:justify-start">
-                  {CHECKS.map((c) => (
+                  {t.hero.trust.map((c) => (
                     <span key={c} className="inline-flex items-center gap-1.5">
                       <CheckIcon /> {c}
                     </span>
@@ -340,7 +250,7 @@ export default function Landing() {
                 )}
               </p>
               <p className="mt-0.5 font-mono text-[11px] uppercase tracking-widest text-[#787774]">
-                Foto terarsip
+                {t.stats.photos}
               </p>
             </div>
             <div aria-hidden className="h-10 w-px bg-[#EAEAEA]" />
@@ -356,7 +266,7 @@ export default function Landing() {
                 )}
               </p>
               <p className="mt-0.5 font-mono text-[11px] uppercase tracking-widest text-[#787774]">
-                Kegiatan
+                {t.stats.activities}
               </p>
             </div>
             <div aria-hidden className="h-10 w-px bg-[#EAEAEA]" />
@@ -365,7 +275,7 @@ export default function Landing() {
                 0
               </p>
               <p className="mt-0.5 font-mono text-[11px] uppercase tracking-widest text-[#787774]">
-                Akun dibutuhkan
+                {t.stats.accounts}
               </p>
             </div>
           </Reveal>
@@ -381,14 +291,13 @@ export default function Landing() {
             <div className="mx-auto max-w-5xl px-5">
               <Reveal className="mb-10 text-center">
                 <p className="font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-[#787774]">
-                  Pratinjau
+                  {t.galeri.eyebrow}
                 </p>
                 <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[#111111] sm:text-4xl">
-                  Dinding yang hidup
+                  {t.galeri.title}
                 </h2>
                 <p className="mx-auto mt-2 max-w-xl text-base text-[#787774]">
-                  Foto terverifikasi dari arsip demo — yang terbaru dari banyak
-                  lensa.
+                  {t.galeri.sub}
                 </p>
               </Reveal>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -396,12 +305,12 @@ export default function Landing() {
                   <Reveal key={p.id} delay={(i % 4) * 60}>
                     <Link
                       to={`/p/${DEMO_SLUG}/photo/${p.id}`}
-                      aria-label={`Buka foto ${i + 1} dari arsip demo`}
+                      aria-label={t.galeri.openPhotoAria(i)}
                       className="group block overflow-hidden rounded-xl border border-[#EAEAEA] bg-white transition duration-200 hover:border-[#111111]"
                     >
                       <img
                         src={p.image_url}
-                        alt={`Foto ${i + 1} dari arsip demo`}
+                        alt={t.galeri.photoAlt(i)}
                         loading="lazy"
                         decoding="async"
                         className="aspect-square w-full object-cover transition duration-200 group-hover:scale-[1.03]"
@@ -412,7 +321,7 @@ export default function Landing() {
               </div>
               <Reveal className="mt-8 text-center">
                 <Button asChild size="lg" className="min-w-[180px]">
-                  <Link to={`/p/${DEMO_SLUG}`}>Buka Arsip Demo</Link>
+                  <Link to={`/p/${DEMO_SLUG}`}>{t.galeri.openArchive}</Link>
                 </Button>
               </Reveal>
             </div>
@@ -424,37 +333,44 @@ export default function Landing() {
           <Manifesto />
         </Suspense>
 
-        {/* Features Bento Grid */}
+        {/* Features — editorial kolektif */}
         <section
           id="fitur"
           aria-label="Fitur utama"
           className="mx-auto max-w-5xl px-5 py-16 sm:py-24 scroll-mt-24"
         >
-          <Reveal className="text-center mb-12">
-            <h2 className="text-2xl font-semibold tracking-tight text-[#111111] sm:text-4xl">
-              Dibuat untuk kolektif
+          <Reveal className="mx-auto mb-10 max-w-2xl text-center sm:mb-14">
+            <p className="font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-[#787774]">
+              {t.kolektif.eyebrow}
+            </p>
+            <h2 className="mt-3 text-3xl font-extrabold tracking-tighter text-balance text-[#111111] sm:text-5xl sm:leading-[1.02]">
+              {t.kolektif.title}
             </h2>
-            <p className="mt-2 text-base text-[#787774] max-w-xl mx-auto">
-              Fokus pada kontribusi mudah dan arsip yang rapi untuk organisasi.
+            <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-[#787774]">
+              {t.kolektif.sub}
             </p>
           </Reveal>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {FEATURES.map((f, i) => (
-              <Reveal key={f.title} delay={i * 50}>
-                <div className="h-full rounded-xl border border-[#EAEAEA] bg-white p-6 transition duration-200 hover:border-[#cccccc] hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-[#EAEAEA] bg-[#F7F6F3] text-[#111111]">
-                    <f.Icon className="size-5" aria-hidden />
-                  </div>
-                  <h3 className="mt-4 font-semibold text-[#111111]">
+          <Reveal className="rounded-2xl border border-[#EAEAEA] bg-[#F7F6F3] p-3 sm:p-4">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {t.kolektif.features.map((f, i) => (
+                <article
+                  key={f.title}
+                  className="flex h-full flex-col rounded-xl border border-[#EAEAEA] bg-white p-6 transition duration-200 hover:border-[#d8d8d8] hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)] sm:p-7"
+                >
+                  <p className="font-mono text-xs tabular-nums text-[#787774]" aria-hidden>
+                    {String(i + 1).padStart(2, "0")}
+                  </p>
+                  <div aria-hidden className="mt-3 h-px w-8 bg-[#EAEAEA]" />
+                  <h3 className="mt-4 text-lg font-semibold tracking-tight text-[#111111]">
                     {f.title}
                   </h3>
-                  <p className="mt-1.5 text-sm leading-relaxed text-[#787774]">
+                  <p className="mt-2 text-sm leading-relaxed text-[#787774]">
                     {f.desc}
                   </p>
-                </div>
-              </Reveal>
-            ))}
-          </div>
+                </article>
+              ))}
+            </div>
+          </Reveal>
         </section>
 
         {/* Z-Pattern — tiga langkah dengan visual bergantian */}
@@ -464,14 +380,14 @@ export default function Landing() {
         >
           <Reveal className="mb-12 text-center">
             <p className="font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-[#787774]">
-              Cara berkontribusi
+              {t.zfitur.eyebrow}
             </p>
             <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[#111111] sm:text-4xl">
-              Semudah memindai
+              {t.zfitur.title}
             </h2>
           </Reveal>
           <div className="flex flex-col gap-12 sm:gap-16">
-            {ZFEATURES.map((z, i) => (
+            {t.zfitur.items.map((z, i) => (
               <div
                 key={z.n}
                 className="grid items-center gap-6 md:grid-cols-2 md:gap-10"
@@ -479,7 +395,7 @@ export default function Landing() {
                 <Reveal className={i % 2 === 1 ? "md:order-2" : ""}>
                   <div className="overflow-hidden rounded-xl border border-[#EAEAEA] bg-[#F7F6F3]">
                     <img
-                      src={z.img}
+                      src={ZIMGS[i]}
                       alt={z.alt}
                       loading="lazy"
                       decoding="async"
@@ -513,11 +429,14 @@ export default function Landing() {
         >
           <div className="mx-auto max-w-5xl px-5">
             <Reveal className="text-center mb-10">
-              <h2 className="text-2xl font-semibold tracking-tight text-[#111111] sm:text-4xl">
-                Dari lapangan ke arsip
+              <p className="font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-[#787774]">
+                {t.org.eyebrow}
+              </p>
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[#111111] sm:text-4xl">
+                {t.org.title}
               </h2>
               <p className="mt-2 text-base text-[#787774] max-w-xl mx-auto">
-                Tiga langkah dari momen menjadi memori kolektif.
+                {t.org.sub}
               </p>
             </Reveal>
             <Suspense fallback={<StepsStackFallback />}>
@@ -536,19 +455,19 @@ export default function Landing() {
             <Reveal className="mb-10 flex flex-wrap items-end justify-between gap-3">
               <div>
                 <h2 className="text-2xl font-semibold tracking-tight text-[#111111] sm:text-4xl">
-                  Jelajahi arsip
+                  {t.arsip.title}
                 </h2>
                 <p className="mt-2 max-w-xl text-base text-[#787774]">
-                  Setiap kegiatan punya dindingnya sendiri. Pilih untuk membuka.
+                  {t.arsip.sub}
                 </p>
               </div>
               <span className="font-mono text-xs text-[#787774] tabular-nums">
-                {periods.length} kegiatan
+                {periods.length} {t.arsip.activitiesUnit}
               </span>
             </Reveal>
             <div className="grid gap-3 sm:grid-cols-2">
               {periods.slice(0, 6).map((ev, i) => {
-                const badge = statusBadge(ev.status);
+                const badge = statusBadge(ev.status, t.common);
                 return (
                   <Reveal key={ev.id} delay={i * 50}>
                     <Link
@@ -591,14 +510,14 @@ export default function Landing() {
         >
           <Reveal className="mb-10 text-center">
             <p className="font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-[#787774]">
-              Kenapa kolektif
+              {t.quotes.eyebrow}
             </p>
             <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[#111111] sm:text-4xl">
-              Banyak lensa, satu cerita
+              {t.quotes.title}
             </h2>
           </Reveal>
           <div className="grid gap-3 md:grid-cols-3">
-            {QUOTES.map((q, i) => (
+            {t.quotes.items.map((q, i) => (
               <Reveal key={q} delay={i * 60}>
                 <figure className="h-full rounded-xl border border-[#EAEAEA] bg-white p-6">
                   <Quote aria-hidden className="size-5 text-[#787774]" />
@@ -619,11 +538,11 @@ export default function Landing() {
           <div className="mx-auto max-w-3xl px-5 py-16 sm:py-24">
             <Reveal className="mb-8 text-center">
               <h2 className="text-2xl font-semibold tracking-tight text-[#111111] sm:text-4xl">
-                Sering ditanyakan
+                {t.faq.title}
               </h2>
             </Reveal>
             <div>
-              {FAQS.map((f) => (
+              {t.faq.items.map((f) => (
                 <Reveal key={f.q}>
                   <details className="group border-b border-[#EAEAEA] py-4 first:border-t">
                     <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-[#111111] [&::-webkit-details-marker]:hidden">
@@ -658,11 +577,10 @@ export default function Landing() {
               <div aria-hidden className="absolute inset-0 bg-black/60" />
               <div className="relative p-8 sm:p-14">
                 <h2 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
-                  Ada kegiatan NFCC berikutnya?
+                  {t.cta.title}
                 </h2>
                 <p className="mt-3 mx-auto max-w-md text-sm sm:text-base text-white/75 leading-relaxed">
-                  Tempel QR di lokasi dan biarkan setiap anggota mengabadikan
-                  momen dari sudut pandangnya.
+                  {t.cta.sub}
                 </p>
                 <div className="mt-6 flex justify-center">
                   <Button
@@ -674,21 +592,21 @@ export default function Landing() {
                       to={`/p/${DEMO_SLUG}`}
                       className="flex items-center gap-2"
                     >
-                      Jelajahi Arsip Demo
+                      {t.cta.exploreDemo}
                       <ArrowIcon />
                     </Link>
                   </Button>
                 </div>
                 <div className="mx-auto mt-8 max-w-md border-t border-white/15 pt-6">
                   <p className="font-mono text-xs text-white/60">
-                    Punya kode kegiatan?
+                    {t.cta.haveCode}
                   </p>
                   <form onSubmit={goToSlug} className="mt-2.5 flex gap-1.5">
                     <input
                       value={slug}
                       onChange={(e) => setSlug(e.target.value)}
-                      placeholder="Kode kegiatan (mis. demo-2026)"
-                      aria-label="Kode kegiatan"
+                      placeholder={t.cta.codePlaceholder}
+                      aria-label={t.cta.codeLabel}
                       autoComplete="off"
                       spellCheck={false}
                       className="flex-1 rounded-md border border-white/20 bg-white/10 px-3.5 py-2 text-sm text-white outline-none backdrop-blur-sm transition placeholder:text-white/50 focus:border-white/60"
@@ -699,7 +617,7 @@ export default function Landing() {
                       size="default"
                       className="shrink-0 bg-white text-black hover:bg-white/80"
                     >
-                      Buka
+                      {t.cta.open}
                     </Button>
                   </form>
                 </div>
@@ -710,8 +628,8 @@ export default function Landing() {
 
         <footer className="border-t border-[#EAEAEA] bg-white">
           <div className="mx-auto flex max-w-5xl flex-col gap-2 px-5 py-8 font-mono text-xs text-[#787774] sm:flex-row sm:justify-between">
-            <span>MEMORY of NFCC — Arsip visual organisasi</span>
-            <span>Kontribusi anggota · Terkurasi</span>
+            <span>{t.footer.left}</span>
+            <span>{t.footer.right}</span>
           </div>
         </footer>
       </main>

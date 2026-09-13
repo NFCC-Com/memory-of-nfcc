@@ -1,5 +1,6 @@
 import { useScroll } from "framer-motion";
 import { useRef } from "react";
+import { useLanguage } from "../lib/i18n.tsx";
 import { StickyCard_001 } from "./ui/skiper-ui/skiper16.tsx";
 
 const IMG = [
@@ -9,43 +10,60 @@ const IMG = [
   "https://res.cloudinary.com/drjrvrdnw/image/upload/v1789098523/background3_tnggbw.png",
 ];
 
-const CARDS = [
+type OrgMember = { name: string; role: "Leader" | "Vice Lead" | "EC" | "Staff" };
+
+type OrgCard = {
+  n: string;
+  title: string;
+  img: string;
+  members: OrgMember[];
+};
+
+const CARDS: OrgCard[] = [
   {
-    n: "NFCC",
-    title: "Arsip visual organisasi",
-    desc: "Setiap kegiatan meninggalkan jejak. MEMORY of NFCC menjaganya tetap hidup dan mudah dibuka kembali.",
-    meta: "milik bersama · selamanya",
+    n: "Pimpinan",
+    title: "Leader & Vice Lead",
     img: IMG[0],
-    alt: "Latar visual kartu arsip NFCC",
+    members: [
+      { name: "Ferdiansyah", role: "Leader" },
+      { name: "Nizar Kurnia Alfaizi", role: "Vice Lead" },
+    ],
   },
   {
-    n: "01",
-    title: "Pindai QR",
-    desc: "QR di lokasi kegiatan membuka arsip. Tanpa aplikasi, tanpa akun.",
-    meta: "/p/:slug · tanpa akun",
+    n: "Humas",
+    title: "Public Relation",
     img: IMG[1],
-    alt: "Latar visual kartu pindai QR",
+    members: [
+      { name: "Tri Nurjulyanti", role: "EC" },
+      { name: "Muhammad Raihan", role: "Staff" },
+    ],
   },
   {
-    n: "02",
-    title: "Unggah momen",
-    desc: "Jepret dari kamera HP atau pilih galeri. JPEG otomatis teroptimasi.",
-    meta: "JPEG · kompresi otomatis",
+    n: "Riset",
+    title: "Research & Education",
     img: IMG[2],
-    alt: "Latar visual kartu unggah momen",
+    members: [
+      { name: "Aria Fatah Anom", role: "EC" },
+      { name: "Robbanie Hilally Kurniadien", role: "Staff" },
+      { name: "Rafa Al Razzak", role: "Staff" },
+      { name: "Hudzaifah Ar Rantisi", role: "Staff" },
+      { name: "Adit Hermansyah", role: "Staff" },
+    ],
   },
   {
-    n: "03",
-    title: "Jadi memori",
-    desc: "Foto terverifikasi masuk dinding kolektif NFCC.",
-    meta: "hanya APPROVED yang tampil",
+    n: "Sekretaris",
+    title: "Secretary",
     img: IMG[3],
-    alt: "Latar visual kartu jadi memori",
+    members: [
+      { name: "Amarsya Swastika Aulia", role: "EC" },
+      { name: "Muhammad Radifah Hibatillah", role: "Staff" },
+    ],
   },
 ];
 
 export default function StepsStack() {
   const container = useRef<HTMLDivElement>(null);
+  const { t } = useLanguage();
   const { scrollYProgress } = useScroll({
     target: container,
     offset: ["start start", "end end"],
@@ -56,7 +74,7 @@ export default function StepsStack() {
   return (
     <div ref={container} className="relative mx-auto max-w-2xl">
       <p className="mb-6 text-center font-mono text-xs text-[#787774]" aria-hidden>
-        gulir — kartu menumpuk
+        {t.orgStack.header}
       </p>
       <div className="flex flex-col gap-5 pb-10">
         {CARDS.map((s, i) => {
@@ -74,7 +92,7 @@ export default function StepsStack() {
               <div className="relative flex min-h-[380px] flex-col overflow-hidden sm:min-h-[440px]">
                 <img
                   src={s.img}
-                  alt={s.alt}
+                  alt={t.orgStack.cards[i].alt}
                   loading={i === 0 ? "eager" : "lazy"}
                   decoding="async"
                   className="absolute inset-0 h-full w-full object-cover"
@@ -92,8 +110,23 @@ export default function StepsStack() {
                   <h3 className="max-w-md text-3xl font-extrabold uppercase leading-[0.95] tracking-tighter text-white sm:text-4xl">
                     {s.title}
                   </h3>
-                  <p className="mt-2.5 max-w-md text-sm leading-relaxed text-white/85">{s.desc}</p>
-                  <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.2em] text-white/70">{s.meta}</p>
+                  <p className="mt-2.5 max-w-md text-sm leading-relaxed text-white/85">{t.orgStack.cards[i].desc}</p>
+                  <ul className="mt-5 space-y-2" aria-label={`Anggota ${s.title}`}>
+                    {s.members.map((m) => (
+                      <li
+                        key={m.name}
+                        className="flex items-center justify-between gap-3 rounded-lg border border-white/20 bg-white/10 px-3.5 py-2 backdrop-blur-sm"
+                      >
+                        <span className="min-w-0 truncate text-sm font-medium text-white">
+                          {m.name}
+                        </span>
+                        <span className="shrink-0 rounded-full bg-white/15 px-2.5 py-0.5 font-mono text-[11px] uppercase tracking-[0.15em] text-white">
+                          {m.role}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.2em] text-white/70">{t.orgStack.cards[i].meta}</p>
                 </div>
               </div>
             </StickyCard_001>

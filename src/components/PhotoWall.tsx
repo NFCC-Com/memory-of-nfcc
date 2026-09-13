@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import type { Photo } from "../lib/api.ts";
+import { useLanguage } from "../lib/i18n.tsx";
 import LikeButton, { ShareButton } from "./LikeButton.tsx";
 import { cn } from "../lib/utils.ts";
 
@@ -26,6 +27,7 @@ function PhotoTile({ photo, slug, index }: { photo: Photo; slug: string; index: 
   const [failed, setFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const figRef = useRef<HTMLElement>(null);
+  const { t } = useLanguage();
   const ratio = photo.width && photo.height ? `${photo.width} / ${photo.height}` : undefined;
 
   // Gagal load transien (timeout/429 saat burst 193 request) tidak boleh
@@ -56,17 +58,17 @@ function PhotoTile({ photo, slug, index }: { photo: Photo; slug: string; index: 
       ref={figRef}
       className="group break-inside-avoid overflow-hidden rounded-xl border border-[#EAEAEA] bg-white transition hover:border-[#cccccc] [content-visibility:auto] [contain-intrinsic-size:auto_420px]"
     >
-      <Link to={`/p/${slug}/photo/${photo.id}`} className="block overflow-hidden" aria-label={`Buka foto ${index + 1}`}>
+      <Link to={`/p/${slug}/photo/${photo.id}`} className="block overflow-hidden" aria-label={t.wall.openPhotoAria(index)}>
         <div className="overflow-hidden bg-[#F7F6F3]" style={ratio ? { aspectRatio: ratio } : undefined}>
           {failed ? (
             <div className={cn("flex w-full items-center justify-center", !ratio && "aspect-[4/5]")}>
-              <span className="px-4 py-10 text-center font-mono text-[11px] text-[#787774]">foto tak termuat</span>
+              <span className="px-4 py-10 text-center font-mono text-[11px] text-[#787774]">{t.wall.failedToLoad}</span>
             </div>
           ) : (
             <img
               key={attempt}
               src={photo.image_url}
-              alt={`Foto ${index + 1} dari arsip ${slug}`}
+              alt={t.wall.photoAlt(index)}
               loading={index < 6 ? "eager" : "lazy"}
               decoding="async"
               onError={() => setFailed(true)}

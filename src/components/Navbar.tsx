@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
+import { useLanguage } from "../lib/i18n.tsx";
 import { useEvents } from "../lib/useEvents.ts";
 import { Button } from "./ui/button.tsx";
 import { cn } from "../lib/utils.ts";
@@ -15,19 +16,23 @@ function preloadMenu() {
   void import("./ui/skiper-ui/skiper13.tsx");
 }
 
-const GLOBAL_LINKS = [
-  { label: "Fitur", hash: "fitur" },
-  { label: "Galeri", hash: "galeri" },
-  { label: "Cara kerja", hash: "cara-kerja" },
-  { label: "Arsip", hash: "arsip" },
+const GLOBAL_LINKS: { hash: string }[] = [
+  { hash: "fitur" },
+  { hash: "galeri" },
+  { hash: "cara-kerja" },
+  { hash: "arsip" },
 ];
 
 export default function Navbar() {
   const { pathname } = useLocation();
-  const links = GLOBAL_LINKS.map((l) => ({
-    label: l.label,
-    href: pathname === "/" ? `#${l.hash}` : `/#${l.hash}`,
-  }));
+  const { lang, setLang, t } = useLanguage();
+  const links = GLOBAL_LINKS.map((g) => {
+    const found = t.nav.links.find((l) => l.hash === g.hash);
+    return {
+      label: found ? found.label : g.hash,
+      href: pathname === "/" ? `#${g.hash}` : `/#${g.hash}`,
+    };
+  });
   const [open, setOpen] = useState(false);
   const events = useEvents();
   const headerRef = useRef<HTMLElement>(null);
@@ -61,46 +66,48 @@ export default function Navbar() {
           ref={headerRef}
           className="relative w-full rounded-2xl bg-white/80 text-[#111111] shadow-[0_8px_30px_rgba(0,0,0,0.08)] backdrop-blur-md"
         >
-          <div className="flex w-full items-center justify-between px-4 py-3 sm:px-5">
+          <div className="flex w-full items-center justify-between gap-2 px-4 py-3 sm:px-5">
             <Link
               to="/"
               className="flex min-w-0 shrink-0 items-center gap-2.5 text-[15px] font-semibold tracking-tight text-[#111111]"
-              aria-label="MEMORY of NFCC — beranda"
+              aria-label={t.nav.home}
             >
               <span className="truncate">MEMORY of NFCC</span>
             </Link>
 
-            <Button
-              ref={toggleRef}
-              type="button"
-              onClick={() => setOpen((v) => !v)}
-              onMouseEnter={preloadMenu}
-              onFocus={preloadMenu}
-              aria-expanded={open}
-              aria-controls="skiper13-menu"
-              aria-label={open ? "Tutup menu" : "Buka menu"}
-              className="h-9 gap-2 rounded-full bg-transparent px-3.5 text-sm font-semibold uppercase tracking-widest text-[#111111] hover:bg-[#F7F6F3] hover:text-[#111111]"
-            >
-              <span className="relative block size-5" aria-hidden>
-                <Menu
-                  className={cn(
-                    "absolute inset-0 size-5 transition-all duration-200",
-                    open
-                      ? "rotate-90 scale-75 opacity-0"
-                      : "rotate-0 scale-100 opacity-100",
-                  )}
-                />
-                <X
-                  className={cn(
-                    "absolute inset-0 size-5 transition-all duration-200",
-                    open
-                      ? "rotate-0 scale-100 opacity-100"
-                      : "-rotate-90 scale-75 opacity-0",
-                  )}
-                />
-              </span>
-              <span className="hidden sm:inline">Menu</span>
-            </Button>
+            <div className="flex shrink-0 items-center gap-2">
+              <Button
+                ref={toggleRef}
+                type="button"
+                onClick={() => setOpen((v) => !v)}
+                onMouseEnter={preloadMenu}
+                onFocus={preloadMenu}
+                aria-expanded={open}
+                aria-controls="skiper13-menu"
+                aria-label={open ? t.nav.closeMenu : t.nav.openMenu}
+                className="h-9 gap-2 rounded-full bg-transparent px-3.5 text-sm font-semibold uppercase tracking-widest text-[#111111] hover:bg-[#F7F6F3] hover:text-[#111111]"
+              >
+                <span className="relative block size-5" aria-hidden>
+                  <Menu
+                    className={cn(
+                      "absolute inset-0 size-5 transition-all duration-200",
+                      open
+                        ? "rotate-90 scale-75 opacity-0"
+                        : "rotate-0 scale-100 opacity-100",
+                    )}
+                  />
+                  <X
+                    className={cn(
+                      "absolute inset-0 size-5 transition-all duration-200",
+                      open
+                        ? "rotate-0 scale-100 opacity-100"
+                        : "-rotate-90 scale-75 opacity-0",
+                    )}
+                  />
+                </span>
+                <span className="hidden sm:inline">{t.nav.menu}</span>
+              </Button>
+            </div>
           </div>
 
           <Suspense fallback={null}>
@@ -110,6 +117,10 @@ export default function Navbar() {
               links={links}
               events={events}
               showEvents
+              lang={lang}
+              onLangChange={setLang}
+              menuLabel={t.nav.mainMenu}
+              eventsTitle={t.nav.eventsTitle}
             />
           </Suspense>
         </header>
