@@ -2,10 +2,13 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { app } from "./app.js";
 
 // Jembatan Node <-> Elysia untuk Vercel functions. Setiap file endpoint di
-// api/ me-re-export handler ini agar routing filesystem Vercel (yang tidak
-// menghormati catch-all [[...route]]/[...route] di proyek ini) cocok secara
+// api/ me-re-export handler ini agar routing filesystem Vercel cocok secara
 // eksplisit per path. URL + method asli diteruskan utuh ke Elysia.
-export const config = { api: { bodyParser: false } };
+//
+// SENGAJA tanpa `export const config`: kunci `api.bodyParser` membuat build
+// Vercel gagal di proyek ini (semua deploy yang memuatnya = failure).
+// Sebagai gantinya bridge membaca stream mentah, dan bila kosong memakai
+// req.body yang sudah di-parse Vercel.
 
 function flatHeaders(req: IncomingMessage): [string, string][] {
   const out: [string, string][] = [];
@@ -25,7 +28,18 @@ async function readBody(req: IncomingMessage): Promise<Buffer | undefined> {
   for await (const chunk of req) {
     chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : (chunk as Buffer));
   }
-  return chunks.length > 0 ? Buffer.concat(chunks) : undefined;
+  if (chunks.length > 0) return Buffer.concat(chunks);
+  // Vercel kadang mem-parse body duluan (JSON/urlencoded) sehingga stream
+  // kosong — pakai hasilnya agar Elysia tetap menerima body utuh.
+  const parsed = (req as unknown as { body?: unknown }).body;
+  if (parsed === undefined || parsed === null) return undefined;
+  if (typeof parsed === "string") return Buffer.from(parsed);
+  if (Buffer.isBuffer(parsed)) return parsed;
+  try {
+    return Buffer.from(JSON.stringify(parsed));
+  } catch {
+    return undefined;
+  }
 }
 
 export async function bridgeHandler(
