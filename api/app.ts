@@ -6,7 +6,7 @@ import { publicRoutes } from "./routes/public.js";
 // (api/[[...route]].ts). Jangan listen di sini — Vercel mengeksekusi
 // sebagai serverless function dan hanya memakai default export.
 export const app = new Elysia()
-  .get("/api/health", () => ({ status: "ok" }))
+  .get("/api/health", () => ({ status: "ok", v: 2 }))
   .use(publicRoutes)
   .use(adminRoutes);
 
