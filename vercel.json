@@ -4,6 +4,10 @@
     {
       "source": "/((?!api/.*|.*\\..*|_vercel).*)",
       "destination": "/index.html"
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/[...route]"
     }
   ]
 }
