@@ -17,10 +17,9 @@ function preloadMenu() {
 }
 
 // Route nyata (valid di App.tsx). Section landing memakai "/#<id>"
-// agar dari /p/:slug menu kembali ke landing; galeri + arsip membuka /events.
+// agar dari /p/:slug menu kembali ke landing; arsip membuka /events.
 const GLOBAL_LINKS: { hash: string; to: string }[] = [
   { hash: "fitur", to: "/#fitur" },
-  { hash: "galeri", to: "/events" },
   { hash: "cara-kerja", to: "/#cara-kerja" },
   { hash: "arsip", to: "/events" },
 ];

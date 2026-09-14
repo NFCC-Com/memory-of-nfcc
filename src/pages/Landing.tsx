@@ -401,6 +401,7 @@ export default function Landing() {
 
         {/* Z-Pattern — tiga langkah dengan visual bergantian */}
         <section
+          id="cara-kerja"
           aria-label="Cara berkontribusi"
           className="mx-auto max-w-5xl px-5 py-16 sm:py-24 scroll-mt-24"
         >
@@ -448,9 +449,9 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* How It Works — Skiper16 sticky card stack */}
+        {/* Struktur organisasi — sticky card stack */}
         <section
-          id="cara-kerja"
+          id="struktur"
           className="border-t border-[#EAEAEA] bg-[#F7F6F3] py-16 sm:py-24 scroll-mt-24"
         >
           <div className="mx-auto max-w-5xl px-5">
