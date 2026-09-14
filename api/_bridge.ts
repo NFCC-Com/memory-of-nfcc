@@ -1,11 +1,10 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { app } from "./app.js";
 
-// Vercel Node function catch-all: SATU function menangani seluruh /api/*
-// dengan meneruskan request mentah ke Elysia (fetch berbasis Web Standard).
-// Pola default-export instance saja tidak cukup di proyek ini — seluruh
-// /api/* me-return halaman 404 platform karena tidak ada function yang
-// cocok — jadi jembatan eksplisit ini yang dipakai.
+// Jembatan Node <-> Elysia untuk Vercel functions. Setiap file endpoint di
+// api/ me-re-export handler ini agar routing filesystem Vercel (yang tidak
+// menghormati catch-all [[...route]]/[...route] di proyek ini) cocok secara
+// eksplisit per path. URL + method asli diteruskan utuh ke Elysia.
 export const config = { api: { bodyParser: false } };
 
 function flatHeaders(req: IncomingMessage): [string, string][] {
@@ -29,7 +28,7 @@ async function readBody(req: IncomingMessage): Promise<Buffer | undefined> {
   return chunks.length > 0 ? Buffer.concat(chunks) : undefined;
 }
 
-export default async function handler(
+export async function bridgeHandler(
   req: IncomingMessage,
   res: ServerResponse,
 ): Promise<void> {
@@ -68,3 +67,5 @@ export default async function handler(
     res.end(JSON.stringify({ error: "kesalahan server" }));
   }
 }
+
+export default bridgeHandler;
