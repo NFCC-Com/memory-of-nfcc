@@ -1,14 +1,12 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { app } from "./app.js";
 
-// Jembatan Node <-> Elysia untuk Vercel functions. Setiap file endpoint di
-// api/ me-re-export handler ini agar routing filesystem Vercel cocok secara
-// eksplisit per path. URL + method asli diteruskan utuh ke Elysia.
-//
-// SENGAJA tanpa `export const config`: kunci `api.bodyParser` membuat build
-// Vercel gagal di proyek ini (semua deploy yang memuatnya = failure).
-// Sebagai gantinya bridge membaca stream mentah, dan bila kosong memakai
-// req.body yang sudah di-parse Vercel.
+// Vercel Node function catch-all: SATU function menangani seluruh /api/*
+// dengan meneruskan request mentah ke Elysia (fetch berbasis Web Standard).
+// Pola default-export instance saja tidak cukup di proyek ini — seluruh
+// /api/* me-return halaman 404 platform karena tidak ada function yang
+// cocok — jadi jembatan eksplisit ini yang dipakai.
+export const config = { api: { bodyParser: false } };
 
 function flatHeaders(req: IncomingMessage): [string, string][] {
   const out: [string, string][] = [];
@@ -28,21 +26,10 @@ async function readBody(req: IncomingMessage): Promise<Buffer | undefined> {
   for await (const chunk of req) {
     chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : (chunk as Buffer));
   }
-  if (chunks.length > 0) return Buffer.concat(chunks);
-  // Vercel kadang mem-parse body duluan (JSON/urlencoded) sehingga stream
-  // kosong — pakai hasilnya agar Elysia tetap menerima body utuh.
-  const parsed = (req as unknown as { body?: unknown }).body;
-  if (parsed === undefined || parsed === null) return undefined;
-  if (typeof parsed === "string") return Buffer.from(parsed);
-  if (Buffer.isBuffer(parsed)) return parsed;
-  try {
-    return Buffer.from(JSON.stringify(parsed));
-  } catch {
-    return undefined;
-  }
+  return chunks.length > 0 ? Buffer.concat(chunks) : undefined;
 }
 
-export async function bridgeHandler(
+export default async function handler(
   req: IncomingMessage,
   res: ServerResponse,
 ): Promise<void> {
@@ -81,5 +68,3 @@ export async function bridgeHandler(
     res.end(JSON.stringify({ error: "kesalahan server" }));
   }
 }
-
-export default bridgeHandler;
