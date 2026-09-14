@@ -11,14 +11,24 @@ function required(name: string): string {
   return value;
 }
 
-const s3 = new S3Client({
-  region: "auto",
-  endpoint: `https://${required("R2_ACCOUNT_ID")}.r2.cloudflarestorage.com`,
-  credentials: {
-    accessKeyId: required("R2_ACCESS_KEY_ID"),
-    secretAccessKey: required("R2_SECRET_ACCESS_KEY"),
-  },
-});
+const s3Holder: { client?: S3Client } = {};
+
+// Disengaja malas: konstruksi S3Client butuh env R2. Dibuat saat pertama
+// dipakai agar import tak meledak saat env belum diset (mis. /api/health
+// di deploy tanpa R2). Error nama env yang hilang muncul saat upload/hapus/baca.
+function getS3(): S3Client {
+  if (!s3Holder.client) {
+    s3Holder.client = new S3Client({
+      region: "auto",
+      endpoint: `https://${required("R2_ACCOUNT_ID")}.r2.cloudflarestorage.com`,
+      credentials: {
+        accessKeyId: required("R2_ACCESS_KEY_ID"),
+        secretAccessKey: required("R2_SECRET_ACCESS_KEY"),
+      },
+    });
+  }
+  return s3Holder.client;
+}
 
 export const R2_BUCKET = process.env.R2_BUCKET_NAME ?? "";
 
@@ -34,18 +44,18 @@ export function publicUrlFor(key: string, photoId: string): string {
 
 export async function putPhoto(key: string, body: Uint8Array, contentType: string): Promise<void> {
   if (!R2_BUCKET) throw new Error("R2_BUCKET_NAME is not set");
-  await s3.send(
+  await getS3().send(
     new PutObjectCommand({ Bucket: R2_BUCKET, Key: key, Body: body, ContentType: contentType }),
   );
 }
 
 export async function deletePhoto(key: string): Promise<void> {
   if (!R2_BUCKET) throw new Error("R2_BUCKET_NAME is not set");
-  await s3.send(new DeleteObjectCommand({ Bucket: R2_BUCKET, Key: key }));
+  await getS3().send(new DeleteObjectCommand({ Bucket: R2_BUCKET, Key: key }));
 }
 export async function getPhotoBytes(key: string): Promise<{ bytes: Uint8Array; contentType?: string }> {
   if (!R2_BUCKET) throw new Error("R2_BUCKET_NAME is not set");
-  const out = await s3.send(new GetObjectCommand({ Bucket: R2_BUCKET, Key: key }));
+  const out = await getS3().send(new GetObjectCommand({ Bucket: R2_BUCKET, Key: key }));
   const bytes = await out.Body!.transformToByteArray();
   return { bytes, contentType: out.ContentType };
 }
