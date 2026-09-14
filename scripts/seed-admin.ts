@@ -6,7 +6,7 @@ const password = process.env.ADMIN_PASSWORD;
 
 if (!email || !password) {
   console.error("Set ADMIN_EMAIL dan ADMIN_PASSWORD dulu. Contoh:");
-  console.error('  $env:ADMIN_EMAIL="admin@example.com"; $env:ADMIN_PASSWORD="rahasia-kuat"; bun run api/db/seed-admin.ts');
+  console.error('  $env:ADMIN_EMAIL="admin@example.com"; $env:ADMIN_PASSWORD="rahasia-kuat"; bun run scripts/seed-admin.ts');
   process.exit(1);
 }
 
