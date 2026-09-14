@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Route statis. Route dinamis /p/:slug dan /p/:slug/photo/:id dibuat per
+     event oleh pengurus — daftarkan slug aktif di sini bila ingin
+     diindeks, atau ganti generator ini dengan endpoint dinamis.
+     Ganti domain bila produksi berbeda dari default Vercel ini. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://memory-of-nfcc.vercel.app/</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://memory-of-nfcc.vercel.app/events</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+</urlset>

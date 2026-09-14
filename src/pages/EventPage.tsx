@@ -9,6 +9,7 @@ import Reveal from "../components/Reveal.tsx";
 import { Button } from "../components/ui/button.tsx";
 import { useLanguage } from "../lib/i18n.tsx";
 import { getPeriod, getPhotos, uploadPhoto, type Period, type Photo } from "../lib/api.ts";
+import { setPageMeta } from "../lib/seo.ts";
 
 const PhotoWall = lazy(() => import("../components/PhotoWall.tsx"));
 
@@ -102,6 +103,22 @@ export default function EventPage() {
     if (y > 0) window.scrollTo({ top: y, behavior: "instant" });
     restoredRef.current = true;
   }, [loading, slug]);
+
+  useEffect(() => {
+    if (period) {
+      setPageMeta({
+        title: `${period.name} — MEMORY of NFCC`,
+        description: period.description || undefined,
+        path: `/p/${slug}`,
+        image: photos[0]?.image_url,
+      });
+    } else {
+      setPageMeta({
+        title: "MEMORY of NFCC — Arsip Visual Organisasi",
+        path: `/p/${slug}`,
+      });
+    }
+  }, [period, photos, slug]);
 
   useEffect(() => {
     let alive = true;

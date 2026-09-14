@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { adminLogin, adminMe, ApiUnreachableError } from "../lib/api.ts";
+import { setPageMeta } from "../lib/seo.ts";
 import Reveal from "../components/Reveal.tsx";
 import { Button } from "../components/ui/button.tsx";
 
@@ -13,6 +14,14 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
   const [checking, setChecking] = useState(true);
+
+  useEffect(() => {
+    setPageMeta({
+      title: "Masuk Pengurus — MEMORY of NFCC",
+      path: "/login",
+      noindex: true,
+    });
+  }, []);
 
   useEffect(() => {
     let alive = true;

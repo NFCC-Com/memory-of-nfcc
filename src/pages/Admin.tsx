@@ -17,6 +17,7 @@ import {
   type AdminPhoto,
 } from "../lib/api.ts";
 import Reveal from "../components/Reveal.tsx";
+import { setPageMeta } from "../lib/seo.ts";
 import { Button } from "../components/ui/button.tsx";
 
 const STATUSES = ["UPCOMING", "ACTIVE", "CLOSED", "ARCHIVED"] as const;
@@ -163,6 +164,14 @@ export default function Admin() {
   const copyTimer = useRef<number | undefined>(undefined);
 
   useEffect(() => () => window.clearTimeout(copyTimer.current), []);
+
+  useEffect(() => {
+    setPageMeta({
+      title: "Admin — MEMORY of NFCC",
+      path: "/admin",
+      noindex: true,
+    });
+  }, []);
 
   function onTabKeys(e: React.KeyboardEvent) {
     const order = ["photos", "events"] as const;

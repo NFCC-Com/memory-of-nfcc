@@ -4,6 +4,7 @@ import Navbar from "../components/Navbar.tsx";
 import Reveal from "../components/Reveal.tsx";
 import { Button } from "../components/ui/button.tsx";
 import { getPeriods, type Period } from "../lib/api.ts";
+import { setPageMeta } from "../lib/seo.ts";
 import { useLanguage, type Strings } from "../lib/i18n.tsx";
 
 function statusBadge(status: Period["status"], c: Strings["common"]) {
@@ -33,6 +34,14 @@ export default function Events() {
       setLoading(false);
     }
   }, [t.events.loadFailed]);
+
+  useEffect(() => {
+    setPageMeta({
+      title: `${t.events.title} — MEMORY of NFCC`,
+      description: t.events.sub,
+      path: "/events",
+    });
+  }, [t]);
 
   useEffect(() => {
     void load();

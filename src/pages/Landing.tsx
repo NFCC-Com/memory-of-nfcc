@@ -28,6 +28,7 @@ function StepsStackFallback() {
   );
 }
 import { getPeriods, getPhotos, type Period, type Photo } from "../lib/api.ts";
+import { setPageMeta } from "../lib/seo.ts";
 import type { Strings } from "../lib/i18n.tsx";
 
 const CTA_BG =
@@ -100,6 +101,13 @@ export default function Landing() {
   const [live, setLive] = useState<Photo[]>([]);
   const [periods, setPeriods] = useState<Period[]>([]);
   const [statsReady, setStatsReady] = useState(false);
+  useEffect(() => {
+    setPageMeta({
+      title: "MEMORY of NFCC — Arsip Visual Organisasi",
+      description: t.hero.sub,
+      path: "/",
+    });
+  }, [t]);
   useEffect(() => {
     let alive = true;
     void (async () => {

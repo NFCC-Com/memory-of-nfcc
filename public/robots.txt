@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /login
+Disallow: /api/
+
+# Ganti dengan domain produksi bila berbeda dari default Vercel ini:
+Sitemap: https://memory-of-nfcc.vercel.app/sitemap.xml

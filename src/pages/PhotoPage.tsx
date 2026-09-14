@@ -7,16 +7,27 @@ import Reveal from "../components/Reveal.tsx";
 import { Button } from "../components/ui/button.tsx";
 import { useLanguage } from "../lib/i18n.tsx";
 import { getPhoto, type Photo } from "../lib/api.ts";
+import { setPageMeta } from "../lib/seo.ts";
 
 export default function PhotoPage() {
   const { slug = "", id = "" } = useParams();
-  const { t } = useLanguage();
+  const { lang, t } = useLanguage();
   const [photo, setPhoto] = useState<Photo | null>(null);
   const [liked, setLiked] = useState(false);
   const [error, setError] = useState("");
   const [imageLoaded, setImageLoaded] = useState(false);
   const [copied, setCopied] = useState(false);
   const shareUrl = typeof window !== "undefined" ? `${window.location.origin}/p/${slug}/photo/${id}` : "";
+
+  useEffect(() => {
+    setPageMeta({
+      title: photo
+        ? `${lang === "id" ? "Foto arsip" : "Archive photo"} ${slug} — MEMORY of NFCC`
+        : "MEMORY of NFCC — Arsip Visual Organisasi",
+      path: `/p/${slug}/photo/${id}`,
+      image: photo?.image_url,
+    });
+  }, [photo, slug, id, lang]);
 
   useEffect(() => {
     let alive = true;

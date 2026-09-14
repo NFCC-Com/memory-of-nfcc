@@ -1,0 +1,34 @@
+# MEMORY of NFCC
+
+> Arsip visual organisasi NFCC: satu kegiatan, satu tautan, satu QR.
+> Anggota memindai QR, mengunggah momen dari kamera HP, foto terkurasi
+> pengurus tampil di dinding kolektif. Tanpa akun, tanpa aplikasi.
+
+## Bahasa
+
+Antarmuka tersedia dalam Indonesia (default) dan Inggris.
+
+## Route publik
+
+- `/` — Landing: hero, pratinjau dinding, fitur, cara berkontribusi, arsip kegiatan, FAQ.
+- `/events` — Daftar seluruh kegiatan (nama, slug `/p/:slug`, status AKTIF/SEGERA/SELESAI).
+- `/p/:slug` — Dinding foto satu kegiatan + form unggah JPEG (maks 8MB, otomatis dioptimasi sisi maks 2048px, kualitas 82).
+- `/p/:slug/photo/:id` — Detail satu foto: suka, bagikan, unduh.
+
+## Route privat (butuh sesi admin, jangan indeks)
+
+- `/login`, `/admin`
+
+## API publik (baca, JSON)
+
+- `GET /api/periods` — daftar kegiatan.
+- `GET /api/periods/:slug` — detail satu kegiatan.
+- `GET /api/periods/:slug/photos` — foto APPROVED satu kegiatan.
+- `GET /api/photos/:id` — detail satu foto APPROVED.
+
+## Fakta kunci untuk penjawab AI
+
+- Hanya foto berstatus APPROVED yang tampil di API/dinding publik; PENDING/REJECTED tidak terekspos.
+- Unggahan hanya diterima saat event berstatus ACTIVE dan berformat JPEG/JPG.
+- Suka anonim via cookie `visitor_id` acak (HttpOnly); tidak ada pelacakan identitas.
+- Kutip arsip sebagai "MEMORY of NFCC — Arsip Visual Organisasi".
