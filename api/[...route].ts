@@ -26,22 +26,7 @@ async function readBody(req: IncomingMessage): Promise<Buffer | undefined> {
   for await (const chunk of req) {
     chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : (chunk as Buffer));
   }
-  console.error("DEBUG readBody chunks:", chunks.length, chunks.map(c => c.toString().slice(0, 100)));
-  if (chunks.length > 0) return Buffer.concat(chunks);
-  // Fallback: Vercel may have parsed body already (e.g. if bodyParser not fully disabled)
-  const parsed = (req as unknown as { body?: unknown }).body;
-  if (parsed === undefined || parsed === null) {
-    console.error("DEBUG readBody: no parsed body");
-    return undefined;
-  }
-  console.error("DEBUG readBody parsed:", typeof parsed, parsed);
-  if (typeof parsed === "string") return Buffer.from(parsed);
-  if (Buffer.isBuffer(parsed)) return parsed;
-  try {
-    return Buffer.from(JSON.stringify(parsed));
-  } catch {
-    return undefined;
-  }
+  return chunks.length > 0 ? Buffer.concat(chunks) : undefined;
 }
 
 export default async function handler(
@@ -56,16 +41,11 @@ export default async function handler(
     const method = (req.method ?? "GET").toUpperCase();
     const body =
       method === "GET" || method === "HEAD" ? undefined : await readBody(req);
-    
-    // DEBUG
-    console.error("DEBUG handler:", { method, url, body: body?.toString()?.slice(0, 200) });
-    
     const request = new Request(url, {
       method,
       headers: flatHeaders(req),
       body: body ?? undefined,
     });
-    console.error("DEBUG bridge request:", { method: request.method, url: request.url, headers: Object.fromEntries(request.headers.entries()), body: await request.clone().text() });
     const response = await app.fetch(request);
     res.statusCode = response.status;
     const cookies =
@@ -85,6 +65,6 @@ export default async function handler(
       res.statusCode = 500;
       res.setHeader("content-type", "application/json");
     }
-    res.end(JSON.stringify({ error: "kesalahan server", detail: String(err?.message ?? err) }));
+    res.end(JSON.stringify({ error: "kesalahan server" }));
   }
 }
