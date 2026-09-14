@@ -85,6 +85,6 @@ export default async function handler(
       res.statusCode = 500;
       res.setHeader("content-type", "application/json");
     }
-    res.end(JSON.stringify({ error: "kesalahan server", detail: err?.message, stack: err?.stack }));
+    res.end(JSON.stringify({ error: "kesalahan server", detail: String(err?.message ?? err) }));
   }
 }
