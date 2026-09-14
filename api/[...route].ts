@@ -26,7 +26,17 @@ async function readBody(req: IncomingMessage): Promise<Buffer | undefined> {
   for await (const chunk of req) {
     chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : (chunk as Buffer));
   }
-  return chunks.length > 0 ? Buffer.concat(chunks) : undefined;
+  if (chunks.length > 0) return Buffer.concat(chunks);
+  // Fallback: Vercel may have parsed body already (e.g. if bodyParser not fully disabled)
+  const parsed = (req as unknown as { body?: unknown }).body;
+  if (parsed === undefined || parsed === null) return undefined;
+  if (typeof parsed === "string") return Buffer.from(parsed);
+  if (Buffer.isBuffer(parsed)) return parsed;
+  try {
+    return Buffer.from(JSON.stringify(parsed));
+  } catch {
+    return undefined;
+  }
 }
 
 export default async function handler(
