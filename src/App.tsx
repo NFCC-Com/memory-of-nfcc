@@ -2,6 +2,7 @@ import { BrowserRouter, Link, Route, Routes } from "react-router-dom";
 import { Toaster } from "sonner";
 import Admin from "./pages/Admin.tsx";
 import EventPage from "./pages/EventPage.tsx";
+import Events from "./pages/Events.tsx";
 import Landing from "./pages/Landing.tsx";
 import Login from "./pages/Login.tsx";
 import PhotoPage from "./pages/PhotoPage.tsx";
@@ -43,6 +44,7 @@ export default function App() {
         />
         <Routes>
           <Route path="/" element={<Landing />} />
+          <Route path="/events" element={<Events />} />
           <Route path="/p/:slug" element={<EventPage />} />
           <Route path="/p/:slug/photo/:id" element={<PhotoPage />} />
           <Route path="/login" element={<Login />} />

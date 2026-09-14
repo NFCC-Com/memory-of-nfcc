@@ -64,6 +64,18 @@ interface LocalStrings {
     sub: string;
     activitiesUnit: string;
   };
+  events: {
+    eyebrow: string;
+    title: string;
+    sub: string;
+    loading: string;
+    emptyTitle: string;
+    emptySub: string;
+    loadFailed: string;
+    retry: string;
+    back: string;
+    openLabel: string;
+  };
   common: {
     active: string;
     upcoming: string;
@@ -172,7 +184,7 @@ const STRINGS: Record<Lang, LocalStrings> = {
       title: "Semua lensa. Satu memori.",
       sub: "Satu kegiatan, satu tautan, satu QR. Anggota memindai dari ponsel, mengunggah momen, dan foto menjadi arsip kolektif NFCC.",
       ctaPrimary: "Explore Memories",
-      ctaSecondary: "Lihat Arsip Demo",
+      ctaSecondary: "Lihat Arsip",
       trust: ["Terkurasi pengurus"],
     },
     stats: {
@@ -183,10 +195,10 @@ const STRINGS: Record<Lang, LocalStrings> = {
     galeri: {
       eyebrow: "Pratinjau",
       title: "Dinding yang hidup",
-      sub: "Foto terverifikasi dari arsip demo — yang terbaru dari banyak lensa.",
-      openArchive: "Buka Arsip Demo",
-      openPhotoAria: (i) => `Buka foto ${i + 1} dari arsip demo`,
-      photoAlt: (i) => `Foto ${i + 1} dari arsip demo`,
+      sub: "Foto terverifikasi dari arsip kegiatan — yang terbaru dari banyak lensa.",
+      openArchive: "Buka Arsip",
+      openPhotoAria: (i) => `Buka foto ${i + 1} dari arsip`,
+      photoAlt: (i) => `Foto ${i + 1} dari arsip`,
     },
     manifesto: {
       eyebrow: "Mengapa mengarsipkan",
@@ -286,6 +298,18 @@ const STRINGS: Record<Lang, LocalStrings> = {
       sub: "Setiap kegiatan punya dindingnya sendiri. Pilih untuk membuka.",
       activitiesUnit: "kegiatan",
     },
+    events: {
+      eyebrow: "Arsip",
+      title: "Semua kegiatan",
+      sub: "Setiap kegiatan punya dindingnya sendiri. Pilih untuk membuka.",
+      loading: "Memuat daftar kegiatan…",
+      emptyTitle: "Belum ada kegiatan.",
+      emptySub: "Arsip kegiatan akan muncul di sini setelah pengurus menambahkannya.",
+      loadFailed: "Gagal memuat daftar kegiatan. Periksa koneksi lalu coba lagi.",
+      retry: "Coba lagi",
+      back: "Kembali ke Beranda",
+      openLabel: "Buka",
+    },
     common: {
       active: "Aktif",
       upcoming: "Segera",
@@ -329,9 +353,9 @@ const STRINGS: Record<Lang, LocalStrings> = {
     cta: {
       title: "Ada kegiatan NFCC berikutnya?",
       sub: "Tempel QR di lokasi dan biarkan setiap anggota mengabadikan momen dari sudut pandangnya.",
-      exploreDemo: "Jelajahi Arsip Demo",
+      exploreDemo: "Jelajahi Arsip",
       haveCode: "Punya kode kegiatan?",
-      codePlaceholder: "Kode kegiatan (mis. demo-2026)",
+      codePlaceholder: "Kode kegiatan (mis. nama-kegiatan)",
       codeLabel: "Kode kegiatan",
       open: "Buka",
     },
@@ -417,7 +441,7 @@ const STRINGS: Record<Lang, LocalStrings> = {
       title: "Every lens. One memory.",
       sub: "One activity, one link, one QR. Members scan from their phones, upload moments, and photos become the collective NFCC archive.",
       ctaPrimary: "Explore Memories",
-      ctaSecondary: "View Demo Archive",
+      ctaSecondary: "View Archive",
       trust: ["Curated by admins"],
     },
     stats: {
@@ -428,10 +452,10 @@ const STRINGS: Record<Lang, LocalStrings> = {
     galeri: {
       eyebrow: "Preview",
       title: "A living wall",
-      sub: "Verified photos from the demo archive — the latest from many lenses.",
-      openArchive: "Open Demo Archive",
-      openPhotoAria: (i) => `Open photo ${i + 1} from the demo archive`,
-      photoAlt: (i) => `Photo ${i + 1} from the demo archive`,
+      sub: "Verified photos from the event archive — the latest from many lenses.",
+      openArchive: "Open Archive",
+      openPhotoAria: (i) => `Open photo ${i + 1} from the archive`,
+      photoAlt: (i) => `Photo ${i + 1} from the archive`,
     },
     manifesto: {
       eyebrow: "Why archive",
@@ -531,6 +555,18 @@ const STRINGS: Record<Lang, LocalStrings> = {
       sub: "Every activity has its own wall. Pick one to open.",
       activitiesUnit: "activities",
     },
+    events: {
+      eyebrow: "Archive",
+      title: "All events",
+      sub: "Every activity has its own wall. Pick one to open.",
+      loading: "Loading events…",
+      emptyTitle: "No events yet.",
+      emptySub: "Event archives will appear here once admins add them.",
+      loadFailed: "Failed to load events. Check your connection and try again.",
+      retry: "Retry",
+      back: "Back to Home",
+      openLabel: "Open",
+    },
     common: {
       active: "Active",
       upcoming: "Upcoming",
@@ -574,9 +610,9 @@ const STRINGS: Record<Lang, LocalStrings> = {
     cta: {
       title: "Have a next NFCC activity?",
       sub: "Stick a QR at the venue and let every member capture moments from their own angle.",
-      exploreDemo: "Explore Demo Archive",
+      exploreDemo: "Explore Archive",
       haveCode: "Have an activity code?",
-      codePlaceholder: "Activity code (e.g. demo-2026)",
+      codePlaceholder: "Activity code (e.g. event-slug)",
       codeLabel: "Activity code",
       open: "Open",
     },

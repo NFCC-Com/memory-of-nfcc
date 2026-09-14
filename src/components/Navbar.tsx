@@ -16,21 +16,23 @@ function preloadMenu() {
   void import("./ui/skiper-ui/skiper13.tsx");
 }
 
-const GLOBAL_LINKS: { hash: string }[] = [
-  { hash: "fitur" },
-  { hash: "galeri" },
-  { hash: "cara-kerja" },
-  { hash: "arsip" },
+// Route nyata (valid di App.tsx). Section landing memakai "/#<id>"
+// agar dari /p/:slug menu kembali ke landing; galeri + arsip membuka /events.
+const GLOBAL_LINKS: { hash: string; to: string }[] = [
+  { hash: "fitur", to: "/#fitur" },
+  { hash: "galeri", to: "/events" },
+  { hash: "cara-kerja", to: "/#cara-kerja" },
+  { hash: "arsip", to: "/events" },
 ];
 
 export default function Navbar() {
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
   const { lang, setLang, t } = useLanguage();
   const links = GLOBAL_LINKS.map((g) => {
     const found = t.nav.links.find((l) => l.hash === g.hash);
     return {
       label: found ? found.label : g.hash,
-      href: pathname === "/" ? `#${g.hash}` : `/#${g.hash}`,
+      href: g.to,
     };
   });
   const [open, setOpen] = useState(false);
@@ -38,6 +40,23 @@ export default function Navbar() {
   const headerRef = useRef<HTMLElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
   const closeMenu = () => setOpen(false);
+
+  useEffect(() => {
+    if (!hash) return;
+    const id = hash.slice(1);
+    if (!id) return;
+    const timers = [
+      window.setTimeout(() => {
+        document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 100),
+      window.setTimeout(() => {
+        document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 400),
+    ];
+    return () => {
+      timers.forEach((tm) => window.clearTimeout(tm));
+    };
+  }, [pathname, hash]);
 
   useEffect(() => {
     if (!open) return;

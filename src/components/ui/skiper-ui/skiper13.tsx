@@ -96,20 +96,36 @@ function Navbar_001({
                     className="flex flex-col gap-1"
                   >
                     {links.map((l, i) => (
-                      <motion.a
-                        key={l.href}
-                        href={l.href}
-                        onClick={onClose}
+                      <motion.div
+                        key={`${l.href}-${l.label}`}
                         variants={itemVariants}
-                        className="group flex items-baseline gap-4 rounded-xl px-2 py-3 transition-all duration-200 hover:translate-x-2 hover:bg-[#F7F6F3]"
                       >
-                        <span className="font-mono text-xs tabular-nums text-[#787774]">
-                          {String(i + 1).padStart(2, "0")}
-                        </span>
-                        <span className="text-2xl font-extrabold uppercase leading-none tracking-tighter text-[#111111] sm:text-3xl">
-                          {l.label}
-                        </span>
-                      </motion.a>
+                        <Link
+                          to={l.href}
+                          onClick={() => {
+                            onClose();
+                            const idx = l.href.indexOf("#");
+                            if (idx >= 0) {
+                              const id = l.href.slice(idx + 1);
+                              if (id) {
+                                window.setTimeout(() => {
+                                  document
+                                    .getElementById(id)
+                                    ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                                }, 120);
+                              }
+                            }
+                          }}
+                          className="group flex items-baseline gap-4 rounded-xl px-2 py-3 transition-all duration-200 hover:translate-x-2 hover:bg-[#F7F6F3]"
+                        >
+                          <span className="font-mono text-xs tabular-nums text-[#787774]">
+                            {String(i + 1).padStart(2, "0")}
+                          </span>
+                          <span className="text-2xl font-extrabold uppercase leading-none tracking-tighter text-[#111111] sm:text-3xl">
+                            {l.label}
+                          </span>
+                        </Link>
+                      </motion.div>
                     ))}
                   </motion.nav>
 

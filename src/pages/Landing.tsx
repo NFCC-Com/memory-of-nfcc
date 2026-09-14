@@ -30,7 +30,6 @@ function StepsStackFallback() {
 import { getPeriods, getPhotos, type Period, type Photo } from "../lib/api.ts";
 import type { Strings } from "../lib/i18n.tsx";
 
-const DEMO_SLUG = "demo-2026";
 const CTA_BG =
   "https://res.cloudinary.com/drjrvrdnw/image/upload/v1789100226/backround2_1_ls0ssp.png";
 
@@ -103,20 +102,39 @@ export default function Landing() {
   const [statsReady, setStatsReady] = useState(false);
   useEffect(() => {
     let alive = true;
-    void Promise.allSettled([
-      getPhotos(DEMO_SLUG).then((res) => {
-        if (alive) setLive(res.photos.slice(0, 12));
-      }),
-      getPeriods().then((res) => {
-        if (alive) setPeriods(res.periods);
-      }),
-    ]).then(() => {
-      if (alive) setStatsReady(true);
-    });
+    void (async () => {
+      try {
+        const res = await getPeriods();
+        if (!alive) return;
+        const list = res.periods;
+        setPeriods(list);
+        if (list.length === 0) {
+          setLive([]);
+        } else {
+          const first = list.find((p) => p.status === "ACTIVE") ?? list[0];
+          try {
+            const ph = await getPhotos(first.slug);
+            if (alive) setLive(ph.photos.slice(0, 12));
+          } catch {
+            if (alive) setLive([]);
+          }
+        }
+      } catch {
+        if (alive) {
+          setPeriods([]);
+          setLive([]);
+        }
+      } finally {
+        if (alive) setStatsReady(true);
+      }
+    })();
     return () => {
       alive = false;
     };
   }, []);
+
+  const previewSlug = (periods.find((p) => p.status === "ACTIVE") ?? periods[0])?.slug;
+  const archiveTo = previewSlug ? `/p/${previewSlug}` : "/events";
 
   function goToSlug(e: React.FormEvent) {
     e.preventDefault();
@@ -173,7 +191,7 @@ export default function Landing() {
                     <a href="#galeri">{t.hero.ctaPrimary}</a>
                   </Button>
                   <Link
-                    to={`/p/${DEMO_SLUG}`}
+                    to={archiveTo}
                     className="skiper-link py-1 text-sm font-medium text-[#111111]"
                   >
                     {t.hero.ctaSecondary} <span aria-hidden>→</span>
@@ -304,7 +322,7 @@ export default function Landing() {
                 {live.slice(0, 8).map((p, i) => (
                   <Reveal key={p.id} delay={(i % 4) * 60}>
                     <Link
-                      to={`/p/${DEMO_SLUG}/photo/${p.id}`}
+                      to={previewSlug ? `/p/${previewSlug}/photo/${p.id}` : "/events"}
                       aria-label={t.galeri.openPhotoAria(i)}
                       className="group block overflow-hidden rounded-xl border border-[#EAEAEA] bg-white transition duration-200 hover:border-[#111111]"
                     >
@@ -321,7 +339,7 @@ export default function Landing() {
               </div>
               <Reveal className="mt-8 text-center">
                 <Button asChild size="lg" className="min-w-[180px]">
-                  <Link to={`/p/${DEMO_SLUG}`}>{t.galeri.openArchive}</Link>
+                  <Link to={archiveTo}>{t.galeri.openArchive}</Link>
                 </Button>
               </Reveal>
             </div>
@@ -589,7 +607,7 @@ export default function Landing() {
                     className="bg-white text-black hover:bg-white/80"
                   >
                     <Link
-                      to={`/p/${DEMO_SLUG}`}
+                      to={archiveTo}
                       className="flex items-center gap-2"
                     >
                       {t.cta.exploreDemo}
