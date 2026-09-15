@@ -60,9 +60,7 @@ export default async function handler(
       body: body ?? undefined,
     });
     console.error("DEBUG request:", { method: request.method, url: request.url, body: await request.clone().text() });
-    console.error("DEBUG: calling app.fetch");
     const response = await app.fetch(request);
-    console.error("DEBUG: response status:", response.status);
     res.statusCode = response.status;
     const cookies =
       typeof response.headers.getSetCookie === "function"
@@ -81,6 +79,6 @@ export default async function handler(
       res.statusCode = 500;
       res.setHeader("content-type", "application/json");
     }
-    res.end(JSON.stringify({ error: "kesalahan server", detail: String(err?.message ?? err) }));
+    res.end(JSON.stringify({ error: "kesalahan server" }));
   }
 }
