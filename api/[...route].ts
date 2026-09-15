@@ -51,6 +51,7 @@ export default async function handler(
     const method = (req.method ?? "GET").toUpperCase();
     const body =
       method === "GET" || method === "HEAD" ? undefined : await readBody(req);
+    console.error("DEBUG handler:", { method, url, body: body?.toString()?.slice(0, 200) });
     // Ensure content-type is passed for POST requests with body
     const headers = flatHeaders(req);
     const request = new Request(url, {
@@ -58,6 +59,7 @@ export default async function handler(
       headers,
       body: body ?? undefined,
     });
+    console.error("DEBUG request:", { method: request.method, url: request.url, body: await request.clone().text() });
     const response = await app.fetch(request);
     res.statusCode = response.status;
     const cookies =
