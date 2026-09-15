@@ -51,9 +51,11 @@ export default async function handler(
     const method = (req.method ?? "GET").toUpperCase();
     const body =
       method === "GET" || method === "HEAD" ? undefined : await readBody(req);
+    // Ensure content-type is passed for POST requests with body
+    const headers = flatHeaders(req);
     const request = new Request(url, {
       method,
-      headers: flatHeaders(req),
+      headers,
       body: body ?? undefined,
     });
     const response = await app.fetch(request);
