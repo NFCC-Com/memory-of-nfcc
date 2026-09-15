@@ -4,12 +4,26 @@ import { app } from "./app.js";
 // Jembatan Node <-> Elysia untuk Vercel functions. Tanpa `export const
 // config` (kunci api.bodyParser membuat build gagal) dan tanpa dependensi
 // selain modul app — setiap file endpoint mengimpor bridgeHandler.
+function flatHeaders(req: IncomingMessage): [string, string][] {
+  const out: [string, string][] = [];
+  for (const [key, value] of Object.entries(req.headers)) {
+    if (value === undefined) continue;
+    if (Array.isArray(value)) {
+      for (const item of value) out.push([key, item]);
+    } else {
+      out.push([key, value]);
+    }
+  }
+  return out;
+}
+
 async function readBody(req: IncomingMessage): Promise<Buffer | undefined> {
   const chunks: Buffer[] = [];
   for await (const chunk of req) {
     chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : (chunk as Buffer));
   }
   if (chunks.length > 0) return Buffer.concat(chunks);
+  // Fallback: Vercel may have parsed body already (e.g. if bodyParser not fully disabled)
   const parsed = (req as unknown as { body?: unknown }).body;
   if (parsed === undefined || parsed === null) return undefined;
   if (typeof parsed === "string") return Buffer.from(parsed);
@@ -33,10 +47,19 @@ export async function bridgeHandler(
     const method = (req.method ?? "GET").toUpperCase();
     const body =
       method === "GET" || method === "HEAD" ? undefined : await readBody(req);
+    // Body HARUS lewat sebagai ArrayBuffer utuh. Konversi ke string UTF-8
+    // merusak byte biner multipart (upload JPEG jadi invalid di Sharp), dan
+    // checker per-file Vercel menolak Uint8Array generik sebagai BodyInit.
+    const bodyBuffer: ArrayBuffer | undefined = body
+      ? (body.buffer.slice(
+          body.byteOffset,
+          body.byteOffset + body.byteLength,
+        ) as ArrayBuffer)
+      : undefined;
     const request = new Request(url, {
       method,
-      headers: req.headers as Record<string, string>,
-      body: body ?? undefined,
+      headers: flatHeaders(req),
+      body: bodyBuffer ?? undefined,
     });
     const response = await app.fetch(request);
     res.statusCode = response.status;
