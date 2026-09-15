@@ -42,9 +42,14 @@ export const adminRoutes = new Elysia()
       }
       const login = body as { email: string; password: string };
       const admin = await getAdminByEmail(login.email.trim().toLowerCase());
-      if (!admin || !(await verifyPassword(admin.password_hash, login.password))) {
+      if (!admin) {
         set.status = 401;
-        return { error: "email atau kata sandi salah" };
+        return { error: "email atau kata sandi salah", debug: "admin-not-found" };
+      }
+      const check = await verifyPassword(admin.password_hash, login.password);
+      if (!check.ok) {
+        set.status = 401;
+        return { error: "email atau kata sandi salah", debug: check.debug ?? "verify-false" };
       }
       const { token, expiresAt } = await createSession(admin.id);
       set.headers["set-cookie"] = sessionCookie(token, expiresAt);
